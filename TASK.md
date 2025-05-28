@@ -6,10 +6,10 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
 
 ## 📅 Week 1: Project Setup & Backend Foundation
 
-- [ ] Setup Flask project structure with virtualenv
-- [ ] Initialize Git and create `.gitignore`
-- [ ] Install backend dependencies (`Flask`, `SQLAlchemy`, `Flask-JWT`, etc.)
-- [ ] Create database models:
+- [x] Setup Flask project structure with virtualenv
+- [x] Initialize Git and create `.gitignore`
+- [x] Install backend dependencies (`Flask`, `SQLAlchemy`, `Flask-JWT`, etc.)
+- [] Create database models:
   - [ ] User (admin & regular user)
   - [ ] ParkingLot
   - [ ] ParkingSpot
