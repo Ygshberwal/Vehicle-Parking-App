@@ -44,7 +44,24 @@ class Reservation(db.Model):
     left_at = db.Column(db.DateTime, nullable=True)
     cost = db.Column(db.Float, default=0.0)
 
+
+def create_admin_user():
+    if not User.query.filter_by(role="admin").first():
+        admin= User(
+            username = "admin",
+            email = "admin@parking.com",
+            password = "admin123",    #will focus on hashing later
+            role = "admin"
+        )
+
+        db.session.add(admin)
+        db.session.commit()
+        print("Admin created successfully\nusername: admin@parking.com\npass: admin123")
+    else :
+        print("Admin already exists")
+
 if(__name__=="__main__"):
     with app.app_context():
         db.create_all()
-        print("Database Created successfully")
+        print("Database Created successfully\n")
+        create_admin_user()
