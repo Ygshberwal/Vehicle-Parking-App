@@ -84,22 +84,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 flask db init  # Or your db setup script
 flask run
-
+```
 
 ### Frontend Setup
+```bash
 cd frontend/
 npm install
 npm run serve
+```
 
 ### Run Redis & Celery (in separate terminals)
+```bash
 # Terminal 1: Redis server
 redis-server
 
 # Terminal 2: Celery worker
 cd backend/
 celery -A app.celery worker --loglevel=info
+```
 
 ### Folder Structure
+```bash
 /backend
   ├── app.py
   ├── models/
@@ -115,3 +120,4 @@ celery -A app.celery worker --loglevel=info
  /venv
  /README.md
  /TASK.md
+ ```
