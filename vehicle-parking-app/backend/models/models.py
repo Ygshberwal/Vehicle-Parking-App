@@ -1,13 +1,13 @@
-from flask import Flask
-from datetime import datetime
+# Have to change the database, this is temperary db, also think about how to handle roles (in user add attribute of role or another Role table)
+
 from flask_sqlalchemy import SQLAlchemy
-
-app=Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']="sqlite:///database.sqlite3"
-db=SQLAlchemy(app)
+from flask_security import UserMixin, RoleMixin
+from datetime import datetime
 
 
-class User(db.Model):
+db=SQLAlchemy()
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -16,6 +16,11 @@ class User(db.Model):
 
     reservations = db.relationship('Reservation', backref='user', lazy=True)
 
+
+class Role(db.Model, RoleMixin):
+    id = db. Column(db. Integer, primary_key = True)
+    name = db. Column(db.String, unique = True, nullable = False)
+    description = db.Column(db.String, nullable = False)
 
 class ParkingLot(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -43,25 +48,3 @@ class Reservation(db.Model):
     parked_at = db.Column(db.DateTime, default=datetime.utcnow)
     left_at = db.Column(db.DateTime, nullable=True)
     cost = db.Column(db.Float, default=0.0)
-
-
-def create_admin_user():
-    if not User.query.filter_by(role="admin").first():
-        admin= User(
-            username = "admin",
-            email = "admin@parking.com",
-            password = "admin123",    #will focus on hashing later
-            role = "admin"
-        )
-
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin created successfully\nusername: admin@parking.com\npass: admin123")
-    else :
-        print("Admin already exists")
-
-if(__name__=="__main__"):
-    with app.app_context():
-        db.create_all()
-        print("Database Created successfully\n")
-        create_admin_user()
