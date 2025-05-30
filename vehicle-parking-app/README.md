@@ -16,6 +16,15 @@ vehicle-parking-app/
         ├── models.py                        # for creating the database
     └── config.py                            # coonfiguration like security keys etc
 ├── frontend/
+    ├── components/              # all reuseable components (navbar, card etc). By convention all comp are capitalized
+        ├── Navbar.js
+    ├── pages/                   # all pages, single usage components kept seperate    
+        ├── LoginPage.js 
+        ├── RegisterPage.js            
+    ├── utils
+        ├── router.js           # handling what to show
+    ├── app.js
+    └── index.html              # single html file, everything will be done using Vue
 ├── instance/
     └── database.sqlite3
 ├── app.py          # will create db automatically, importing both model files
