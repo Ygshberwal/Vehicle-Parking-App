@@ -7,20 +7,17 @@ python3 app.py
 ```
 
 
-### Folder Structure & file description 
+### Folder Structure & File Description 
 ```bash
-vehicle-parking-app
+vehicle-parking-app/
 ├── backend/
     ├── models/
         ├── create_initial_database.py       # initialise database with admin data
         ├── models.py                        # for creating the database
     └── config.py                            # coonfiguration like security keys etc
-
 ├── frontend/
-
 ├── instance/
     └── database.sqlite3
-
 ├── app.py          # will create db automatically, importing both model files
 └── README.md
  ```
