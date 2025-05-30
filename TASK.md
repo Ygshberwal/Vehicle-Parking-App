@@ -11,9 +11,10 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
 - [x] Install backend dependencies (`Flask`, `SQLAlchemy`, `Flask-JWT`, etc.)
 - [x] Create database models:
   - [x] User (admin & regular user)
-  - [x] ParkingLot
-  - [x] ParkingSpot
-  - [x] Reservation
+  - [x] Integrate flask_security
+  - [ ] ParkingLot
+  - [ ] ParkingSpot
+  - [ ] Reservation
 - [x] Auto-create Admin when DB is initialized
 - [ ] Implement JWT or Flask-Login for auth
 - [ ] Create basic REST APIs:

@@ -1,32 +1,38 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_security import Security, SQLAlchemyUserDatastore
 from backend.config import LocalDevelopmentConfig
 from backend.models.models import db, User, Role
+from flask_security import Security, SQLAlchemyUserDatastore, auth_required
+
 
 def createApp():
-    app=Flask(__name__)
+    app = Flask(__name__)
 
     app.config.from_object(LocalDevelopmentConfig)
 
-    # model initialize
+    # model init
     db.init_app(app)
 
-    # flask secuirty 
-    datastore =  SQLAlchemyUserDatastore(db, User, Role)
+    #flask security
+    datastore = SQLAlchemyUserDatastore(db, User, Role)
+
     app.security = Security(app, datastore=datastore)
     app.app_context().push()
 
-    db.create_all()
-    import backend.models.create_initial_data
-    
     return app
-app=createApp()
 
-import backend.models
+app = createApp()
+
+import backend.models.create_initial_data
+
 @app.get('/')
 def home():
-    return '<h1> Hello World </h1>'
+    return '<h1> home page</h1>'
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.get('/protected')
+@auth_required()
+def protected():
+    return '<h1> only accessible by auth user</h1>'
+
+
+if (__name__ == '__main__'):
+    app.run()
