@@ -38,7 +38,7 @@ class ParkingLot(db.Model):
     price = db.Column(db.Integer, nullable =  False)
     address = db.Column(db.String, nullable =  False)
     pincode = db.Column(db.Integer, nullable =  False)
-    max_spots = db.Column(db.Integer, nullable =  False)
+    max_slot = db.Column(db.Integer, nullable =  False)
 
 class ParkingSlot(db.Model):
     id = db.Column(db.Integer, primary_key = True)

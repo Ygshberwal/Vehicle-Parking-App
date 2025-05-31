@@ -2,6 +2,7 @@ from flask import Flask
 from backend.config import LocalDevelopmentConfig
 from backend.models.models import db, User, Role
 from flask_security import Security, SQLAlchemyUserDatastore, auth_required
+from backend.resources import api
 
 
 def createApp():
@@ -13,6 +14,9 @@ def createApp():
 
     # model init
     db.init_app(app)
+
+    # flask-restful init
+    api.init_app(app)
 
     #flask security
     datastore = SQLAlchemyUserDatastore(db, User, Role)
