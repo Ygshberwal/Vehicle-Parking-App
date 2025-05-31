@@ -14,6 +14,8 @@ vehicle-parking-app/
     ├── models/
         ├── create_initial_database.py       # initialise database with admin data
         ├── models.py                        # for creating the database
+    ├── routes.py                            # backend logic for end points
+    ├── resources.py                         # flask-restful for handling api
     └── config.py                            # coonfiguration like security keys etc
 ├── frontend/
     ├── components/              # all reuseable components (navbar, card etc). By convention all comp are capitalized
