@@ -13,11 +13,19 @@ with app.app_context():
     userdatastore.find_or_create_role(name = 'user', description = 'general user')
 
     if (not userdatastore.find_user(email = 'admin@parking.com')):
-        userdatastore.create_user(email = 'admin@parking.com', password = hash_password('admin123'), roles = ['admin'] )
+        userdatastore.create_user(email = 'admin@parking.com', 
+                                  name = "admin",
+                                  password = hash_password('admin123'), 
+                                  roles = ['admin'],
+                                )
         print("Admin created successfully\nusername: admin@parking.com\npass: admin123")
 
     if (not userdatastore.find_user(email = 'user01@parking.com')):
-        userdatastore.create_user(email = 'user01@parking.com', password = hash_password('user123'), roles = ['user'] ) # for testing
+        userdatastore.create_user(email = 'user01@parking.com', 
+                                  name = "user01",
+                                  password = hash_password('user123'), 
+                                  roles = ['user'] 
+                                  ) # for testing
         print("User created successfully\nusername: user01@parking.com\npass: user123")
 
     db.session.commit()
