@@ -50,6 +50,9 @@ def register():
     name = data.get('name')
     password =  data.get('password')
     role = data.get('role')
+    dp = data.get('dp')
+    pincode = data.get('pincode')
+
 
     if not email or not password  or not name or role != 'user':
         return jsonify({"message" : "invalid input"}), 400
@@ -60,7 +63,7 @@ def register():
         return jsonify({"message" : "user already exists"}), 400
 
     try:
-        datastore.create_user(email = email, name =name, password = hash_password(password), roles = [role])
+        datastore.create_user(email = email, name =name, password = hash_password(password), roles = [role], dp = dp, pincode = pincode)
         db.session.commit()
         return jsonify({"message" : "user created"}), 200
     except: 
