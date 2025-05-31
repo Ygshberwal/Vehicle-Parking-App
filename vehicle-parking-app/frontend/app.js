@@ -8,7 +8,7 @@ const app = new Vue({
     template : `
         <div>
             <Navbar />
-            <router-view> </router-view>
+            <router-view> </router-view>       <!-- change to whatever component router is pointing to -->
         </div>
     `,
     components : {

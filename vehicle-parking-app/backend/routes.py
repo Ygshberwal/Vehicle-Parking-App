@@ -47,10 +47,11 @@ def register():
     data =  request.get_json()        # whatever we get from request, we store it in data variable
 
     email = data.get('email')
+    name = data.get('name')
     password =  data.get('password')
     role = data.get('role')
 
-    if not email or not password or role != 'user':
+    if not email or not password  or not name or role != 'user':
         return jsonify({"message" : "invalid input"}), 400
     
     user = datastore.find_user(email =  email)
@@ -59,7 +60,7 @@ def register():
         return jsonify({"message" : "user already exists"}), 400
 
     try:
-        datastore.create_user(email = email, password = hash_password(password), roles = [role])
+        datastore.create_user(email = email, name =name, password = hash_password(password), roles = [role])
         db.session.commit()
         return jsonify({"message" : "user created"}), 200
     except: 
