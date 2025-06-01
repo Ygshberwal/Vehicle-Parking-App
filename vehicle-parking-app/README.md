@@ -20,11 +20,14 @@ vehicle-parking-app/
 ├── frontend/
     ├── components/              # all reuseable components (navbar, card etc). By convention all comp are capitalized
         ├── Navbar.js
+        ├── LotCard.js
     ├── pages/                   # all pages, single usage components kept seperate    
         ├── LoginPage.js 
         ├── RegisterPage.js            
+        ├── LotListPage.js            
     ├── utils
         ├── router.js           # handling what to show
+        ├── store.js            # for storing and sharing data between components using vuex
     ├── app.js
     └── index.html              # single html file, everything will be done using Vue
 ├── instance/
