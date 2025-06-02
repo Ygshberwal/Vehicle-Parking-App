@@ -4,11 +4,11 @@ export default {
     template : `
     <div>
         <h1> List of Parking Lots </h1>
-        <h2> {{ $store.state.auth_token}} </h2>
-        <h2> {{ $store.state.role}} </h2>
+        <h3> Logged in as {{ $store.state.role}} </h3>
+        <!-- <h4> Authentication Token: {{ $store.state.auth_token}} </h4> -->
         <LotCard 
             v-for="lot in lots" 
-            :key="lot.id"
+            :lot_id="lot.id" 
             :location_name="lot.location_name" 
             :address="lot.address" 
             :pincode="lot.pincode" 

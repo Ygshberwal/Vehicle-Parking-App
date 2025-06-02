@@ -26,12 +26,13 @@ const store =  new Vuex.Store({
         },
 
         logout(state){
-            auth_token = null;
-            role = null;
-            loggedIn = false;
-            user_id = null;
+            state.auth_token = null;
+            state.role = null;
+            state.loggedIn = false;
+            state.user_id = null;
 
             localStorage.removeItem('user')
+            console.log("logged out successfully")
         }
     },
     actions : {

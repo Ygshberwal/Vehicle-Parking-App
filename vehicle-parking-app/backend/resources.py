@@ -56,7 +56,7 @@ class LotListAPI(Resource):
         pincode = data.get('pincode')
         max_slot = data.get('max_slot')
 
-        lot = ParkingLot(location_name = location_name, price = price, address = address, pincode = pincode, max_slot = max_slot)
+        lot = ParkingLot( location_name = location_name, price = price, address = address, pincode = pincode, max_slot = max_slot)
 
         db.session.add(lot)
         db.session.commit()
