@@ -1,17 +1,15 @@
-const Home = {
-    template : `<h1> this is home </h1>`
-}
 import LoginPage from "../pages/LoginPage.js";
 import LotListPage from "../pages/LotListPage.js";
 import RegisterPage from "../pages/RegisterPage.js";
 import LotDisplayPage from "../pages/LotDisplayPage.js";
+import HomePage from "../pages/HomePage.js";
 import AdminDashboardPage from "../pages/AdminDashboardPage.js"
 import UserDashboardPage from "../pages/UserDashboardPage.js";
 
 import store from "./store.js";
 
 const routes = [
-    {path : '/',component: Home},
+    {path : '/',component: HomePage},
     {path:'/login', component: LoginPage},
     {path:'/register', component : RegisterPage},
     {path:'/lots', component : LotListPage, meta :{requiresLogin : true}},
