@@ -6,7 +6,8 @@ export default {
             <router-link v-if="!$store.state.loggedIn" to='/login'>Login</router-link>
             <router-link v-if="!$store.state.loggedIn" to='/register'>Register</router-link>
 
-            <router-link v-if="$store.state.loggedIn && $store.state.role == 'admin'" to='/admin-dashboard'>Admin Dashboard</router-link>
+            <router-link v-if="$store.state.loggedIn && $store.state.role == 'admin'" to='/admin-dashboard'>AdminDashboard</router-link>
+            <router-link v-if="$store.state.loggedIn && $store.state.role == 'user'" to='/user-dashboard'>UserDashboard</router-link>
             <router-link v-if="$store.state.loggedIn" to='/lots'>Lots</router-link>
             <router-link v-if="$store.state.loggedIn && $store.state.role == 'user'" to='/explore'>Explore</router-link>
 
