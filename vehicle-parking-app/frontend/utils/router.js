@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage.js";
 import LotListPage from "../pages/LotListPage.js";
 import RegisterPage from "../pages/RegisterPage.js";
 import LotDisplayPage from "../pages/LotDisplayPage.js";
+import AdminDashboardPage from "../pages/AdminDashboardPage.js"
 
 import store from "./store.js";
 
