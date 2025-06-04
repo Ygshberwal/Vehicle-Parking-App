@@ -3,6 +3,7 @@ from flask import current_app as app, jsonify, render_template, request
 from flask_security import auth_required
 from flask_security.utils import hash_password, verify_password
 from backend.models.models import db
+from backend.celery.tasks import add
 import os
 
 datastore = app.security.datastore
@@ -16,6 +17,11 @@ def home():
 @cache.cached(timeout = 5)
 def cache():
      return {'time': str(datetime.now() )}
+
+@app.get('/celery')
+def celery():
+    task = add.delay(10, 20)
+    return {'task_id': task.id}
 
 @app.route('/debug-template')
 def debug_template():

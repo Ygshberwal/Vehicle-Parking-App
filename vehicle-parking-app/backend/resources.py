@@ -43,7 +43,7 @@ class LotAPI(Resource):
 class LotListAPI(Resource):
 
     @auth_required('token')
-    @cache.chached(timeout = 5, key_prefix = "lot_list")                 # get fxn does not take any parameter so cached
+    @cache.cached(timeout = 5, key_prefix = "lot_list")                 # get fxn does not take any parameter so cached
     @marshal_with(lot_fields)
     def get(self):
         lots = ParkingLot.query.all()

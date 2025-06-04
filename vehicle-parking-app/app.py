@@ -3,6 +3,7 @@ from backend.config import LocalDevelopmentConfig
 from backend.models.models import db, User, Role
 from flask_security import Security, SQLAlchemyUserDatastore, auth_required
 from flask_caching import Cache
+from backend.celery.celery_factory import celery_init_app
 
 
 def createApp():
@@ -29,6 +30,7 @@ def createApp():
     return app
 
 app = createApp()
+celery_app = celery_init_app(app)
 
 import backend.models.create_initial_data
 import backend.routes
