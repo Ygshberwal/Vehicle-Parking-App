@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import current_app as app, jsonify, render_template, request
 from flask_security import auth_required
 from flask_security.utils import hash_password, verify_password
@@ -5,10 +6,16 @@ from backend.models.models import db
 import os
 
 datastore = app.security.datastore
+cache = app.cache
 
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/cache')
+@cache.cached(timeout = 5)
+def cache():
+     return {'time': str(datetime.now() )}
 
 @app.route('/debug-template')
 def debug_template():

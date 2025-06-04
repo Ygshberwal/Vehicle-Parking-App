@@ -1,8 +1,9 @@
-from flask import jsonify, request
+from flask import jsonify, request, current_app as app
 from flask_restful import Api, Resource, fields, marshal_with
 from flask_security import auth_required, current_user
 from backend.models.models import ParkingLot, db
 
+cache = app.cache
 api = Api(prefix='/api')
 
 lot_fields = {
@@ -16,8 +17,9 @@ lot_fields = {
 
 class LotAPI(Resource):
 
-    @marshal_with(lot_fields)
     @auth_required('token')
+    @cache.memoize(timeout = 5)                  # get fxn takes parameter so memoize
+    @marshal_with(lot_fields)
     def get(self, lot_id):
         lot = ParkingLot.query.get(lot_id)
 
@@ -40,8 +42,9 @@ class LotAPI(Resource):
         
 class LotListAPI(Resource):
 
-    @marshal_with(lot_fields)
     @auth_required('token')
+    @cache.chached(timeout = 5, key_prefix = "lot_list")                 # get fxn does not take any parameter so cached
+    @marshal_with(lot_fields)
     def get(self):
         lots = ParkingLot.query.all()
         return lots
@@ -60,7 +63,8 @@ class LotListAPI(Resource):
 
         db.session.add(lot)
         db.session.commit()
-        return jsonify({"message" : "lot created"})
+        return jsonify({"message" : "lot created"}) 
+        # can clear cache after pushing 
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
