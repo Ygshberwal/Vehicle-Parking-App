@@ -4,6 +4,7 @@ from flask_security import auth_required
 from flask_security.utils import hash_password, verify_password
 from backend.models.models import db
 from backend.celery.tasks import add
+from celery.result import AsyncResult
 import os
 
 datastore = app.security.datastore
@@ -22,6 +23,15 @@ def cache():
 def celery():
     task = add.delay(10, 20)
     return {'task_id': task.id}
+
+@app.get('/get-celery-data/<id>')
+def getData(id):
+    result = AsyncResult(id)
+
+    if result.ready():
+        return {'result' : result.result}, 200
+    else :
+        return {'message': 'task not ready'}, 405
 
 @app.route('/debug-template')
 def debug_template():
