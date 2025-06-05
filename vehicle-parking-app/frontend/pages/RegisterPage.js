@@ -1,16 +1,75 @@
 export default {
+    // validation contraints are yet to be added
     template : `
-        <div>
-            <input placeholder='email' v-model="email" />
-            <input placeholder='name' v-model="name" />
-            <input placeholder='password' v-model="password" />
-            <input placeholder='pincode' v-model="pincode" />
-            <input placeholder='dp' v-model="dp" />
+        <div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
+      <h4 class="text-center mb-4">Create Account</h4>
 
-            <!-- <input placeholder='role' v-model="role" /> -->
-            <button class="btn btn-primary" @click="submitRegister"> Register </button>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          placeholder="Enter your email"
+          v-model="email"
+        >
+      </div>
 
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input
+          type="text"
+          id="name"
+          class="form-control"
+          placeholder="Enter your name"
+          v-model="name"
+        >
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          placeholder="Enter your password"
+          v-model="password"
+        >
+      </div>
+
+      <div class="mb-3">
+        <label for="pincode" class="form-label">Pincode (optional)</label>
+        <input
+          type="text"
+          id="pincode"
+          class="form-control"
+          placeholder="Enter your pincode"
+          v-model="pincode"
+        >
+      </div>
+
+      <!-- <div class="mb-3">
+        <label for="dp" class="form-label">Profile Picture (optional)</label>
+        <input
+          type="file"
+          id="dp"
+          class="form-control"
+          placeholder="Enter image URL"
+          v-model="dp"
+        >
         </div>
+        -->
+
+      <button class="btn btn-success w-100 mb-3" @click="submitRegister">Register</button>
+
+      <div class="text-center">
+        <router-link to="/login" class="text-decoration-none">
+          Already have an account? <strong>Login</strong>
+        </router-link>
+      </div>
+    </div>
+  </div>
     `,
     data(){
         return {
@@ -32,7 +91,7 @@ export default {
                 })
             if (res.ok){
                 console.log("we are registered")
-                
+                this.$router.push('/login')
             }
         }
     }
