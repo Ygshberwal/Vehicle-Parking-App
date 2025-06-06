@@ -12,14 +12,14 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
 - [x] Create database models:
   - [x] User (admin & regular user)
   - [x] Integrate flask_security
-  - [ ] ParkingLot
-  - [ ] ParkingSpot
-  - [ ] Reservation
+  - [x] ParkingLot
+  - [x] ParkingSpot
+  - [x] ReserveParkingSpot
 - [x] Auto-create Admin when DB is initialized
-- [ ] Implement JWT or Flask-Login for auth
-- [ ] Create basic REST APIs:
-  - [ ] Register/Login (user)
-  - [ ] Login (admin)
+- [x] Implement JWT or Flask-Login for auth
+- [x] Create basic REST APIs:
+  - [x] Register/Login (user)
+  - [x] Login (admin)
   - [ ] Create/View/Edit/Delete Parking Lot (admin)
   - [ ] View Parking Spot Status
   - [ ] Reserve Spot (user)
@@ -29,9 +29,9 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
 
 ## 📅 Week 2: Frontend Development with VueJS
 
-- [ ] Initialize Vue project with Bootstrap
-- [ ] Set up Vue Router
-- [ ] Create login/register components
+- [x] Initialize Vue project with Bootstrap
+- [x] Set up Vue Router
+- [x] Create login/register components
 - [ ] Create Admin dashboard components:
   - [ ] Create/Edit/Delete Parking Lots
   - [ ] View Parking Spots
