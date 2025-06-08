@@ -42,6 +42,9 @@ export default {
 
         <!-- Logout button on Right -->
         <div v-if="$store.state.loggedIn">
+            <span class="text-white">
+              <strong>{{ $store.state.name.toUpperCase() }}</strong>
+            </span>
           <button class="btn btn-outline-light" @click="$store.commit('logout')">Logout</button>
         </div>
 
