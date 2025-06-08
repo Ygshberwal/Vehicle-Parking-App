@@ -5,7 +5,12 @@ export default {
     <div>
         <h1> List of Parking Lots </h1>
         <h3> Logged in as {{ $store.state.role}} </h3>
+        <h3> Logged in as {{ $store.state.name}} </h3>
         <!-- <h4> Authentication Token: {{ $store.state.auth_token}} </h4> -->
+        <div  class="text-center">
+        <router-link v-if="$store.state.role === 'admin'" to="/add-lot" class="text-decoration-none">
+          Add Parking Lot
+        </router-link>
         <LotCard 
             v-for="lot in lots" 
             :lot_id="lot.id" 
@@ -15,6 +20,7 @@ export default {
             :price="lot.price" 
             :max_slot="lot.max_slot"
         />
+        </div>
     </div>
     `,
 
