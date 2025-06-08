@@ -60,7 +60,7 @@ def login():
         return jsonify({"message" : "invalid email"}), 400 
     
     if verify_password(password, user.password):         # flask security feature, handles hashed pass matching implicitly
-        return jsonify({'token' : user.get_auth_token(), 'email' : user.email, 'role' : user.roles[0].name, 'id' : user.id})
+        return jsonify({'token' : user.get_auth_token(), 'email' : user.email, 'name': user.name, 'role' : user.roles[0].name, 'id' : user.id})
     
     return jsonify({'message' : "wrong password"})
 
@@ -92,3 +92,33 @@ def register():
     except: 
         db.session.rollback()
         return jsonify({"message" : "error creating user"}), 400
+    
+
+@app.route('/add-lot', methods=['POST'])
+def addLot():
+    data =  request.get_json()        # whatever we get from request, we store it in data variable
+
+    email = data.get('email')
+    name = data.get('name')
+    password =  data.get('password')
+    role = data.get('role')
+    dp = data.get('dp')
+    pincode = data.get('pincode')
+
+
+    if not email or not password  or not name or role != 'user':
+        return jsonify({"message" : "invalid input"}), 400
+    
+    user = datastore.find_user(email =  email)
+
+    if user:
+        return jsonify({"message" : "user already exists"}), 400
+
+    try:
+        datastore.create_user(email = email, name =name, password = hash_password(password), roles = [role], dp = dp, pincode = pincode)
+        db.session.commit()
+        return jsonify({"message" : "user created"}), 200
+    except: 
+        db.session.rollback()
+        return jsonify({"message" : "error creating user"}), 400
+    

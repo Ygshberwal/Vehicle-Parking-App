@@ -5,6 +5,7 @@ const store =  new Vuex.Store({
         // data that everyone can access
         auth_token : null,
         role : null,
+        name : null,
         loggedIn : false,
         user_id : null,
     },
@@ -14,8 +15,10 @@ const store =  new Vuex.Store({
             try{
                 if(JSON.parse(localStorage.getItem('user'))){
                     const user =JSON.parse(localStorage.getItem('user'));
+                    console.log(user)
                     state.auth_token = user.token;
                     state.role = user.role;
+                    state.name = user.name;
                     state.loggedIn =  true;
                     state.user_id = user.id;
                 }
@@ -28,6 +31,7 @@ const store =  new Vuex.Store({
         logout(state){
             state.auth_token = null;
             state.role = null;
+            state.name = null;
             state.loggedIn = false;
             state.user_id = null;
 

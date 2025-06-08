@@ -51,19 +51,33 @@ class LotListAPI(Resource):
     
     @auth_required('token')
     def post(self):
-        data = request.get_json()
+        try:
+            data = request.get_json()
+            app.logger.info(f"POST /lots received: {data}")
 
-        location_name = data.get('location_name')
-        price = data.get('price')
-        address = data.get('address')
-        pincode = data.get('pincode')
-        max_slot = data.get('max_slot')
+            location_name = data.get('location_name')
+            price = int(data.get('price'))
+            address = data.get('address')
+            pincode = int(data.get('pincode'))
+            max_slot = int(data.get('max_slot'))
 
-        lot = ParkingLot( location_name = location_name, price = price, address = address, pincode = pincode, max_slot = max_slot)
+            lot = ParkingLot(
+                location_name=location_name,
+                price=price,
+                address=address,
+                pincode=pincode,
+                max_slot=max_slot
+            )
 
-        db.session.add(lot)
-        db.session.commit()
-        return jsonify({"message" : "lot created"}) 
+            db.session.add(lot)
+            db.session.commit()
+            cache.delete("lot_list")  # clear cache if needed
+
+            return {"message": "lot created"}, 201
+        except Exception as e:
+            app.logger.error(f"Error in POST /lots: {e}")
+            return {"error": str(e)}, 500
+
         # can clear cache after pushing 
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')

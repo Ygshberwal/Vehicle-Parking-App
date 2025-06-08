@@ -5,6 +5,7 @@ import LotDisplayPage from "../pages/LotDisplayPage.js";
 import HomePage from "../pages/HomePage.js";
 import AdminDashboardPage from "../pages/AdminDashboardPage.js"
 import UserDashboardPage from "../pages/UserDashboardPage.js";
+import AddParkingLot from "../pages/AddParkingLot.js";
 
 import store from "./store.js";
 
@@ -16,6 +17,7 @@ const routes = [
     {path:'/lots/:id', component : LotDisplayPage, props : true, meta :{requiresLogin : true}},
     {path:'/admin-dashboard', component : AdminDashboardPage, props : true, meta :{requiresLogin : true, role : "admin"}},
     {path:'/user-dashboard', component : UserDashboardPage, props : true, meta :{requiresLogin : true, role : "user"}},
+    {path:'/add-lot', component : AddParkingLot},
 ]
 
 const router =  new VueRouter({
