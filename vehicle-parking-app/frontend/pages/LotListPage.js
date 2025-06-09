@@ -1,4 +1,5 @@
 import LotCard from "../components/LotCard.js";
+import SmallLotCard from "../components/SmallLotCard.js";
 
 export default {
     template : `
@@ -11,7 +12,7 @@ export default {
         <router-link v-if="$store.state.role === 'admin'" to="/add-lot" class="text-decoration-none">
           Add Parking Lot
         </router-link>
-        <LotCard 
+        <SmallLotCard 
             v-for="lot in lots" 
             :lot_id="lot.id" 
             :location_name="lot.location_name" 
@@ -50,6 +51,7 @@ export default {
     
     components : {
         LotCard,
+        SmallLotCard
     }
     
 }
