@@ -35,7 +35,7 @@ export default {
                 if (res.ok) {
                     this.$emit('lot-deleted', this.lot_id);
                     alert(`Lot '${this.location_name}' deleted successfully`);
-                    this.$router.go(0);
+                    window.location.reload();
                 } else {
                     const errorData = await res.json();
                     alert(`Error: ${errorData.message || 'Failed to delete parking lot'}`);

@@ -37,6 +37,7 @@ const store =  new Vuex.Store({
 
             localStorage.removeItem('user')
             console.log("logged out successfully")
+            window.location.reload();
         }
     },
     actions : {
