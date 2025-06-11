@@ -27,6 +27,34 @@ class LotAPI(Resource):
             return {"message" : "Not found"}, 404
         return lot
     
+    @auth_required("token")
+    def put(self, lot_id):
+        lot = ParkingLot.query.get(lot_id)
+
+        if not lot :
+            return {"message" : "Not found"}, 404
+        
+        if current_user.roles[0] != "admin":            
+            return {"message" : "Not authorized"}
+        
+        try: 
+            data = request.get_json()
+            app.logger.info(f"PUT /lots received: {data}")
+
+            lot.location_name = data.get('location_name')
+            lot.price = int(data.get('price'))
+            lot.address = data.get('address')
+            lot.pincode = int(data.get('pincode'))
+            lot.max_slot = int(data.get('max_slot'))
+
+            db.session.commit()
+            return {"message": "lot updated"}, 201
+        
+        except Exception as e:
+            app.logger.error(f"Error in PUT /lots: {e}")
+            return {"error": str(e)}, 500
+
+
     @auth_required('token')
     def delete(self, lot_id):
         lot = ParkingLot.query.get(lot_id)
@@ -34,7 +62,7 @@ class LotAPI(Resource):
         if not lot :
             return {"message" : "Not found"}, 404
         
-        if current_user.roles[0] == "admin":            #only delete lot if user is admin
+        if current_user.roles[0] == "admin":            
             db.session.delete(lot)
             db.session.commit()
         else:

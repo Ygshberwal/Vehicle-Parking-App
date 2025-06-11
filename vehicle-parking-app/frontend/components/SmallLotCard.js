@@ -17,6 +17,10 @@ export default {
                     title="Delete Parking Lot">
                     🗑️ Delete
                 </button>
+                <div class="col-auto" v-if="$store.state.role === 'admin'">
+                    <router-link v-if="$store.state.role === 'admin'" :to="'/lots/' + lot_id + '/update-lot'" class="text-decoration-none">
+                    Edit 
+                    </router-link>
                 </div>
             </div>
         </div>
