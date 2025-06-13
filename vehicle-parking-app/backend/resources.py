@@ -59,7 +59,7 @@ class LotAPI(Resource):
                 available_slots = ParkingSlot.query.filter_by(lot_id= lot.id, status = "available").limit(removable_slots).all()
 
                 if len(available_slots)< removable_slots:
-                    return {"error" :  "Cannot delete slots that are already occupied"}, 400
+                    return {"message" :  "Cannot delete slots that are already occupied"}, 400
 
                 for slot in available_slots:
                     db.session.delete(slot)
@@ -82,6 +82,11 @@ class LotAPI(Resource):
             return {"message" : "Not found"}, 404
         
         if current_user.roles[0] == "admin":            
+            occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
+            if occupied_slots:
+                return {"message" : "Cannot delete lot, one or more slots are occupied"}, 400
+            
+            ParkingSlot.query.filter_by(lot_id = lot.id).delete()
             db.session.delete(lot)
             db.session.commit()
         else:
