@@ -6,7 +6,7 @@ export default {
         <p>Lot Address: {{lot.address}} </p>
         <p>Pincode: {{lot.pincode}} </p>
         <hr>
-        <p>Price per hour: Rs. {{lot.price}} </p>
+        <p>Price per hour: ₹{{lot.price}} </p>
         <p>Max Capacity: {{lot.max_slot}} </p>
         <p>Available Slots {{lot.available_slot}} </p>
         <p>Occupied Slots {{lot.occupied_slot}} </p>

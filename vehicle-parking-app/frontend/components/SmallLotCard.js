@@ -16,10 +16,11 @@ export default {
                     class="btn btn-sm btn-outline-danger"
                     title="Delete Parking Lot">
                     🗑️ Delete
-                </button>
+                    </button>
+                </div>
                 <div class="col-auto" v-if="$store.state.role === 'admin'">
-                    <router-link v-if="$store.state.role === 'admin'" :to="'/lots/' + lot_id + '/update-lot'" class="text-decoration-none">
-                    Edit 
+                    <router-link v-if="$store.state.role === 'admin'" :to="'/lots/' + lot_id + '/update-lot'" class="btn btn-sm btn-outline-success">
+                    ✏️ Edit 
                     </router-link>
                 </div>
             </div>

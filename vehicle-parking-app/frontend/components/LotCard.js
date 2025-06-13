@@ -10,6 +10,7 @@ export default {
         <hr>
         <p> Slots : {{max_slot}} </p>
         <p> Price per hour : {{price}} </p>
+    </div>
     `,
 
 }
