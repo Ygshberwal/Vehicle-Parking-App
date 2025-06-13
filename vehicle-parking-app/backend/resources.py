@@ -1,7 +1,7 @@
 from flask import jsonify, request, current_app as app
 from flask_restful import Api, Resource, fields, marshal_with
 from flask_security import auth_required, current_user
-from backend.models.models import ParkingLot, db
+from backend.models.models import ParkingLot,ParkingSlot, db
 
 cache = app.cache
 api = Api(prefix='/api')
@@ -45,7 +45,26 @@ class LotAPI(Resource):
             lot.price = int(data.get('price'))
             lot.address = data.get('address')
             lot.pincode = int(data.get('pincode'))
-            lot.max_slot = int(data.get('max_slot'))
+
+            new_max_slot = int(data.get('max_slot'))
+            old_max_slot = lot.max_slot
+
+            if new_max_slot >= old_max_slot:
+                additional_slots = new_max_slot - old_max_slot
+                for _ in range(additional_slots):
+                    slot = ParkingSlot(lot_id= lot.id, status = "available")
+                    db.session.add(slot)
+            elif new_max_slot < old_max_slot:
+                removable_slots = old_max_slot - new_max_slot
+                available_slots = ParkingSlot.query.filter_by(lot_id= lot.id, status = "available").limit(removable_slots).all()
+
+                if len(available_slots)< removable_slots:
+                    return {"error" :  "Cannot delete slots that are already occupied"}, 400
+
+                for slot in available_slots:
+                    db.session.delete(slot)
+
+            lot.max_slot = new_max_slot
 
             db.session.commit()
             return {"message": "lot updated"}, 201
@@ -98,6 +117,12 @@ class LotListAPI(Resource):
             )
 
             db.session.add(lot)
+            db.session.flush()
+            
+            for _ in range(max_slot):                        #add max_slot slots for a given parking lot automatically
+                slot = ParkingSlot(lot_id = lot.id, status = "available")
+                db.session.add(slot)
+
             db.session.commit()
             cache.delete("lot_list")  # clear cache if needed
 
