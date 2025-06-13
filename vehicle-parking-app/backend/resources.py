@@ -12,7 +12,9 @@ lot_fields = {
     "price" : fields.Integer,
     "address" : fields.String,
     "pincode" : fields.Integer,
-    "max_slot" : fields.Integer
+    "max_slot" : fields.Integer,
+    "available_slot" : fields.Integer,
+    "occupied_slot" : fields.Integer,
 }
 
 class LotAPI(Resource):
@@ -22,6 +24,11 @@ class LotAPI(Resource):
     @marshal_with(lot_fields)
     def get(self, lot_id):
         lot = ParkingLot.query.get(lot_id)
+        occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
+        available_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status == "available").all()
+        
+        lot.available_slot=len(available_slots)
+        lot.occupied_slot = len(occupied_slots)
 
         if not lot :
             return {"message" : "Not found"}, 404
