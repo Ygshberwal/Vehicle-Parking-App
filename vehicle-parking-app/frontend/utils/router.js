@@ -8,6 +8,7 @@ import UserDashboardPage from "../pages/UserDashboardPage.js";
 import AddParkingLot from "../pages/AddParkingLot.js";
 import UpdateParkingLot from "../pages/UpdateParkingLot.js";
 import store from "./store.js";
+import AllUsersPage from "../pages/AllUsersPage.js"
 
 const routes = [
     {path : '/',component: HomePage},
@@ -16,6 +17,7 @@ const routes = [
     {path:'/lots', component : LotListPage, meta :{requiresLogin : true}},
     {path:'/lots/:id', component : LotDisplayPage, props : true, meta :{requiresLogin : true}},
     {path:'/admin-dashboard', component : AdminDashboardPage, props : true, meta :{requiresLogin : true, role : "admin"}},
+    {path:'/users', component : AllUsersPage,  meta :{requiresLogin : true, role : "admin"}},
     {path:'/user-dashboard', component : UserDashboardPage, props : true, meta :{requiresLogin : true, role : "user"}},
     {path:'/add-lot', component : AddParkingLot},
     {path:'/lots/:id/update-lot', component : UpdateParkingLot},

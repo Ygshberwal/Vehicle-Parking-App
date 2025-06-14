@@ -1,7 +1,7 @@
 from flask import jsonify, request, current_app as app
 from flask_restful import Api, Resource, fields, marshal_with
 from flask_security import auth_required, current_user
-from backend.models.models import ParkingLot,ParkingSlot, db
+from backend.models.models import ParkingLot, ParkingSlot, User, db
 
 cache = app.cache
 api = Api(prefix='/api')
@@ -15,6 +15,12 @@ lot_fields = {
     "max_slot" : fields.Integer,
     "available_slot" : fields.Integer,
     "occupied_slot" : fields.Integer,
+}
+
+user_fields = {
+    "id" : fields.Integer,
+    "name" : fields.String,
+    "email" : fields.String,
 }
 
 class LotAPI(Resource):
@@ -145,6 +151,18 @@ class LotListAPI(Resource):
 
         # can clear cache after pushing 
 
+
+class UserListAPI(Resource):
+
+    @auth_required('token')
+    @cache.cached(timeout = 5, key_prefix = "lot_list")                 # get fxn does not take any parameter so cached
+    @marshal_with(user_fields)
+    def get(self):
+        users = User.query.all()
+        return users
+    
+
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
+api.add_resource(UserListAPI, '/users')
 

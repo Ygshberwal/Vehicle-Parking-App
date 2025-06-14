@@ -26,6 +26,10 @@ export default {
               <router-link class="nav-link" to="/admin-dashboard">Admin Dashboard</router-link>
             </li>
 
+            <li class="nav-item" v-if="$store.state.role === 'admin'">
+              <router-link class="nav-link" to="/users">Users</router-link>
+            </li>
+
             <li class="nav-item" v-if="$store.state.role === 'user'">
               <router-link class="nav-link" to="/user-dashboard">User Dashboard</router-link>
             </li>
