@@ -21,6 +21,7 @@ user_fields = {
     "id" : fields.Integer,
     "name" : fields.String,
     "email" : fields.String,
+    "active" : fields.Integer
 }
 
 class LotAPI(Resource):
@@ -151,7 +152,45 @@ class LotListAPI(Resource):
 
         # can clear cache after pushing 
 
+class UserAPI(Resource):
 
+    @auth_required('token')
+    @cache.memoize(timeout = 5)                  # get fxn takes parameter so memoize
+    @marshal_with(user_fields)
+    def get(self, user_id):
+        user = User.query.get(user_id)
+        
+        if not user :
+            return {"message" : "Not found"}, 404
+        return user
+    
+    @auth_required("token")
+    @marshal_with(user_fields)
+    def put(self, user_id):
+        user = User.query.get(user_id)
+
+        if not user:
+            return {"message": "User not found"}, 404
+
+        if current_user.roles[0] != "admin":
+            return {"message": "Not authorized"}, 403
+
+        try:
+            app.logger.info(f"PUT /users received for user_id={user_id}")
+
+            if user.active == 0:
+                user.active = 1
+            else :
+                user.active = 0
+
+            db.session.commit()
+
+            app.logger.info(f"User {user.name} blocked successfully")
+            return user, 200  
+
+        except Exception as e:
+            app.logger.error(f"Error in PUT /users: {e}")
+            return {"error": str(e)}, 500
 class UserListAPI(Resource):
 
     @auth_required('token')
@@ -162,7 +201,9 @@ class UserListAPI(Resource):
         return users
     
 
+
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
+api.add_resource(UserAPI, '/users/<int:user_id>')
 api.add_resource(UserListAPI, '/users')
 
