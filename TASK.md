@@ -20,8 +20,8 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
 - [x] Create basic REST APIs:
   - [x] Register/Login (user)
   - [x] Login (admin)
-  - [ ] Create/View/Edit/Delete Parking Lot (admin)
-  - [ ] View Parking Spot Status
+  - [x] Create/View/Edit/Delete Parking Lot (admin)
+  - [x] View Parking Spot Status
   - [ ] Reserve Spot (user)
   - [ ] Release Spot (user)
 
@@ -32,10 +32,10 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
 - [x] Initialize Vue project with Bootstrap
 - [x] Set up Vue Router
 - [x] Create login/register components
-- [ ] Create Admin dashboard components:
-  - [ ] Create/Edit/Delete Parking Lots
-  - [ ] View Parking Spots
-  - [ ] View Users
+- [x] Create Admin dashboard components:
+  - [x] Create/Edit/Delete Parking Lots
+  - [x] View Parking Spots
+  - [x] View Users
 - [ ] Create User dashboard components:
   - [ ] Book Spot (auto-assigned)
   - [ ] Release Spot
