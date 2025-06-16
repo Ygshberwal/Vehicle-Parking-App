@@ -12,7 +12,7 @@ lot_fields = {
     "price" : fields.Integer,
     "address" : fields.String,
     "pincode" : fields.Integer,
-    "max_slot" : fields.Integer,
+    # "max_slot" : fields.Integer,
     "available_slot" : fields.Integer,
     "occupied_slot" : fields.Integer,
 }
@@ -31,11 +31,11 @@ class LotAPI(Resource):
     @marshal_with(lot_fields)
     def get(self, lot_id):
         lot = ParkingLot.query.get(lot_id)
-        occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
-        available_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status == "available").all()
+        # occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
+        # available_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status == "available").all()
         
-        lot.available_slot=len(available_slots)
-        lot.occupied_slot = len(occupied_slots)
+        # lot.available_slot=len(available_slots)
+        # lot.occupied_slot = len(occupied_slots)
 
         if not lot :
             return {"message" : "Not found"}, 404
@@ -61,31 +61,69 @@ class LotAPI(Resource):
             lot.pincode = int(data.get('pincode'))
 
             new_max_slot = int(data.get('max_slot'))
-            old_max_slot = lot.max_slot
+            current_total_slots = lot.available_slot + lot.occupied_slot
 
-            if new_max_slot >= old_max_slot:
-                additional_slots = new_max_slot - old_max_slot
+            if new_max_slot > current_total_slots:
+            # Add slots
+                additional_slots = new_max_slot - current_total_slots
+                lot.available_slot += additional_slots
+
                 for _ in range(additional_slots):
-                    slot = ParkingSlot(lot_id= lot.id, status = "available")
+                    slot = ParkingSlot(lot_id=lot.id, status="available")
                     db.session.add(slot)
-            elif new_max_slot < old_max_slot:
-                removable_slots = old_max_slot - new_max_slot
-                available_slots = ParkingSlot.query.filter_by(lot_id= lot.id, status = "available").limit(removable_slots).all()
 
-                if len(available_slots)< removable_slots:
-                    return {"message" :  "Cannot delete slots that are already occupied"}, 400
+            elif new_max_slot < current_total_slots:
+                # Try to remove slots
+                slots_to_remove = current_total_slots - new_max_slot
 
-                for slot in available_slots:
+                if slots_to_remove > lot.available_slot:
+                    return {"message": "Cannot delete slots that are already occupied"}, 400
+
+                # Remove only from available slots
+                removable_slots = ParkingSlot.query.filter_by(
+                    lot_id=lot.id, status="available"
+                ).limit(slots_to_remove).all()
+
+                for slot in removable_slots:
                     db.session.delete(slot)
 
-            lot.max_slot = new_max_slot
+                lot.available_slot -= slots_to_remove
+
+            # else: same number of slots → only update metadata
 
             db.session.commit()
             return {"message": "lot updated"}, 201
-        
+
         except Exception as e:
             app.logger.error(f"Error in PUT /lots: {e}")
             return {"error": str(e)}, 500
+
+
+        #     old_available_slot = lot.available_slot
+
+        #     if new_available_slot >= old_available_slot:
+        #         additional_slots = new_available_slot - old_available_slot
+        #         for _ in range(additional_slots):
+        #             slot = ParkingSlot(lot_id= lot.id, status = "available")
+        #             db.session.add(slot)
+        #     elif new_available_slot < old_available_slot:
+        #         removable_slots = old_available_slot - new_available_slot
+        #         available_slots = ParkingSlot.query.filter_by(lot_id= lot.id, status = "available").limit(removable_slots).all()
+
+        #         if len(available_slots)< removable_slots:
+        #             return {"message" :  "Cannot delete slots that are already occupied"}, 400
+
+        #         for slot in available_slots:
+        #             db.session.delete(slot)
+
+        #     lot.available_slot = new_available_slot
+
+        #     db.session.commit()
+        #     return {"message": "lot updated"}, 201
+        
+        # except Exception as e:
+        #     app.logger.error(f"Error in PUT /lots: {e}")
+        #     return {"error": str(e)}, 500
 
 
     @auth_required('token')
@@ -96,8 +134,8 @@ class LotAPI(Resource):
             return {"message" : "Not found"}, 404
         
         if current_user.roles[0] == "admin":            
-            occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
-            if occupied_slots:
+            # occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
+            if lot.occupied_slot:
                 return {"message" : "Cannot delete lot, one or more slots are occupied"}, 400
             
             ParkingSlot.query.filter_by(lot_id = lot.id).delete()
@@ -125,20 +163,21 @@ class LotListAPI(Resource):
             price = int(data.get('price'))
             address = data.get('address')
             pincode = int(data.get('pincode'))
-            max_slot = int(data.get('max_slot'))
+            available_slot = int(data.get('max_slot'))
 
             lot = ParkingLot(
                 location_name=location_name,
                 price=price,
                 address=address,
                 pincode=pincode,
-                max_slot=max_slot
+                available_slot=available_slot,
+                occupied_slot =0
             )
 
             db.session.add(lot)
             db.session.flush()
             
-            for _ in range(max_slot):                        #add max_slot slots for a given parking lot automatically
+            for _ in range(available_slot):                        #add max_slot slots for a given parking lot automatically
                 slot = ParkingSlot(lot_id = lot.id, status = "available")
                 db.session.add(slot)
 

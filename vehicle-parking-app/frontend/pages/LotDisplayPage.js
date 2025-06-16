@@ -7,9 +7,10 @@ export default {
         <p>Pincode: {{lot.pincode}} </p>
         <hr>
         <p>Price per hour: ₹{{lot.price}} </p>
-        <p>Max Capacity: {{lot.max_slot}} </p>
+        <p>Max Capacity: {{lot.available_slot+lot.occupied_slot}} </p>
         <p>Available Slots {{lot.available_slot}} </p>
         <p>Occupied Slots {{lot.occupied_slot}} </p>
+        <button > Book </button>
     </div>
     `,
     data(){
@@ -26,6 +27,11 @@ export default {
         if (res.ok){
             this.lot = await res.json()
         }
-
     }
+    // methods : {
+    //     async bookSlot(){
+            
+
+    //     }
+    // }
 }

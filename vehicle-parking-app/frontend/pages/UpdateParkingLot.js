@@ -7,6 +7,7 @@ export default {
             address: '',
             pincode: '',
             price: '',
+            available_slot: '',
             max_slot: '',
             isLoading: false
         };
@@ -89,7 +90,7 @@ export default {
                     this.address = data.address;
                     this.pincode = data.pincode;
                     this.price = data.price;
-                    this.max_slot = data.max_slot;
+                    this.max_slot = data.available_slot + data.occupied_slot;;
                 } else {
                     const errorData = await res.json();
                     console.error('Failed to fetch lot data:', errorData.message);

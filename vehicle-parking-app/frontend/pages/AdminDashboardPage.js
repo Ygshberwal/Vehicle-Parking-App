@@ -14,7 +14,7 @@ export default {
             :address="lot.address" 
             :pincode="lot.pincode" 
             :price="lot.price" 
-            :max_slot="lot.max_slot"
+            :available_slot="lot.available_slot"
         />
     </div>
     `,

@@ -1,6 +1,6 @@
 export default {
     name: "LotCard",
-    props: ['lot_id', 'location_name', 'address', 'pincode', 'price', 'max_slot'],
+    props: ['lot_id', 'location_name', 'address', 'pincode', 'price', 'available_slot'],
     template: `
         <div class="container">
             <div class="row py-2 border-bottom"

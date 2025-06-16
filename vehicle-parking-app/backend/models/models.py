@@ -38,7 +38,9 @@ class ParkingLot(db.Model):
     price = db.Column(db.Integer, nullable =  False)
     address = db.Column(db.String, nullable =  False)
     pincode = db.Column(db.Integer, nullable =  False)
-    max_slot = db.Column(db.Integer, nullable =  False)
+    # max_slot = db.Column(db.Integer, nullable =  False)
+    available_slot = db.Column(db.Integer, default=0)
+    occupied_slot = db.Column(db.Integer, default=0)
 
 class ParkingSlot(db.Model):
     id = db.Column(db.Integer, primary_key = True)
@@ -52,4 +54,4 @@ class ReserveParkingSlot(db.Model):
     parking_timestamp = db.Column(db.DateTime, index = True, default = datetime.now())
     leaving_timestamp = db.Column(db.DateTime, index = True, nullable = True)
     cost = db.Column(db.Integer, nullable = True)
-    vehicle_no = db.Column(db.String, nullable = False)
+    vehicle_no = db.Column(db.String, nullable = True)
