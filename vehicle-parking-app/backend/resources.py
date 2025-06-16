@@ -25,6 +25,17 @@ user_fields = {
     "active" : fields.Integer
 }
 
+booking_fields = {
+    'id': fields.Integer,
+    'u_id': fields.Integer,
+    's_id': fields.Integer,
+    'parking_timestamp': fields.DateTime(dt_format='iso8601'),
+    'leaving_timestamp': fields.DateTime(dt_format='iso8601'),
+    'cost': fields.Integer,
+    'vehicle_no': fields.String
+}
+
+
 class LotAPI(Resource):
 
     @auth_required('token')
@@ -238,10 +249,24 @@ class BookSlotAPI(Resource):
         return {"message": "Slot booked", "slot_id": slot.id, "parking_timestamp": reservation.parking_timestamp.strftime("%Y-%m-%d %H:%M:%S")}, 201
     
 
+class BookingList(Resource):
+    @auth_required('token')
+    @marshal_with(booking_fields)
+    def get(self, user_id):
+        bookings = ReserveParkingSlot.query.filter_by(u_id= user_id).all()
+        
+        if not bookings :
+            return [], 200
+        
+        return bookings, 200
+        
+    
+
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
 api.add_resource(UserAPI, '/users/<int:user_id>')
 api.add_resource(UserListAPI, '/users')
 api.add_resource(BookSlotAPI, '/lots/<int:lot_id>/book')
+api.add_resource(BookingList, '/user-dashboard/<int:user_id>')
 
