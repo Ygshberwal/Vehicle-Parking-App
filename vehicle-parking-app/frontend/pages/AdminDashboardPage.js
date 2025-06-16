@@ -15,13 +15,14 @@ export default {
             :pincode="lot.pincode" 
             :price="lot.price" 
             :available_slot="lot.available_slot"
+            :occupied_slot="lot.occupied_slot"
         />
     </div>
     `,
 
     // this data will contain all the parking lots
     // data is a function that return an object
-    data(){            
+    data(){             
         return {
             lots : []
         }

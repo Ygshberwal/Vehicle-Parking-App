@@ -1,5 +1,5 @@
 export default {
-    name: "LotCard",
+    name: "SmallLotCard",
     props: ['lot_id', 'location_name', 'address', 'pincode', 'price', 'available_slot'],
     template: `
         <div class="container">

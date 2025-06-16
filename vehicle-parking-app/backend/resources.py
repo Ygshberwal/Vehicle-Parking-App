@@ -1,7 +1,8 @@
+from datetime import datetime
 from flask import jsonify, request, current_app as app
 from flask_restful import Api, Resource, fields, marshal_with
 from flask_security import auth_required, current_user
-from backend.models.models import ParkingLot, ParkingSlot, User, db
+from backend.models.models import ParkingLot, ParkingSlot, ReserveParkingSlot, User, db
 
 cache = app.cache
 api = Api(prefix='/api')
@@ -31,11 +32,6 @@ class LotAPI(Resource):
     @marshal_with(lot_fields)
     def get(self, lot_id):
         lot = ParkingLot.query.get(lot_id)
-        # occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
-        # available_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status == "available").all()
-        
-        # lot.available_slot=len(available_slots)
-        # lot.occupied_slot = len(occupied_slots)
 
         if not lot :
             return {"message" : "Not found"}, 404
@@ -97,33 +93,6 @@ class LotAPI(Resource):
         except Exception as e:
             app.logger.error(f"Error in PUT /lots: {e}")
             return {"error": str(e)}, 500
-
-
-        #     old_available_slot = lot.available_slot
-
-        #     if new_available_slot >= old_available_slot:
-        #         additional_slots = new_available_slot - old_available_slot
-        #         for _ in range(additional_slots):
-        #             slot = ParkingSlot(lot_id= lot.id, status = "available")
-        #             db.session.add(slot)
-        #     elif new_available_slot < old_available_slot:
-        #         removable_slots = old_available_slot - new_available_slot
-        #         available_slots = ParkingSlot.query.filter_by(lot_id= lot.id, status = "available").limit(removable_slots).all()
-
-        #         if len(available_slots)< removable_slots:
-        #             return {"message" :  "Cannot delete slots that are already occupied"}, 400
-
-        #         for slot in available_slots:
-        #             db.session.delete(slot)
-
-        #     lot.available_slot = new_available_slot
-
-        #     db.session.commit()
-        #     return {"message": "lot updated"}, 201
-        
-        # except Exception as e:
-        #     app.logger.error(f"Error in PUT /lots: {e}")
-        #     return {"error": str(e)}, 500
 
 
     @auth_required('token')
@@ -230,6 +199,7 @@ class UserAPI(Resource):
         except Exception as e:
             app.logger.error(f"Error in PUT /users: {e}")
             return {"error": str(e)}, 500
+
 class UserListAPI(Resource):
 
     @auth_required('token')
@@ -238,6 +208,34 @@ class UserListAPI(Resource):
     def get(self):
         users = User.query.all()
         return users
+
+class BookSlotAPI(Resource):
+    @auth_required('token')
+    def post(self, lot_id):
+        lot = ParkingLot.query.get(lot_id)
+        if not lot:
+            return {"message": "Lot not found"}, 404
+
+        if lot.available_slot <= 0:
+            return {"message": "No available slots"}, 400
+
+        slot = ParkingSlot.query.filter_by(lot_id = lot.id, status="available").first()
+        if not slot:
+            return {"message": "Lot not found"}, 404
+        
+        slot.status = "occupied"
+        lot.available_slot-=1
+        lot.occupied_slot+=1
+
+        reservation = ReserveParkingSlot(
+            u_id = current_user.id,
+            s_id = slot.id,
+            parking_timestamp = datetime.now()
+        )
+
+        db.session.add(reservation)
+        db.session.commit()
+        return {"message": "Slot booked", "slot_id": slot.id, "parking_timestamp": reservation.parking_timestamp.strftime("%Y-%m-%d %H:%M:%S")}, 201
     
 
 
@@ -245,4 +243,5 @@ api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
 api.add_resource(UserAPI, '/users/<int:user_id>')
 api.add_resource(UserListAPI, '/users')
+api.add_resource(BookSlotAPI, '/lots/<int:lot_id>/book')
 
