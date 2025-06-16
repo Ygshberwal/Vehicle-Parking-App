@@ -251,16 +251,28 @@ class BookSlotAPI(Resource):
 
 class BookingList(Resource):
     @auth_required('token')
-    @marshal_with(booking_fields)
     def get(self, user_id):
-        bookings = ReserveParkingSlot.query.filter_by(u_id= user_id).all()
-        
-        if not bookings :
-            return [], 200
-        
-        return bookings, 200
-        
-    
+        bookings = ReserveParkingSlot.query.filter_by(u_id=user_id).all()
+
+        result = []
+        for booking in bookings:
+            slot = ParkingSlot.query.get(booking.s_id)
+            lot = ParkingLot.query.get(slot.lot_id) if slot else None
+
+            result.append({
+                "id": booking.id,
+                "u_id": booking.u_id,
+                "s_id": booking.s_id,
+                "parking_timestamp": booking.parking_timestamp.isoformat(),
+                "leaving_timestamp": booking.leaving_timestamp.isoformat() if booking.leaving_timestamp else None,
+                "cost": booking.cost,
+                "vehicle_no": booking.vehicle_no,
+                "lot_name": lot.location_name if lot else "Unknown",
+                "lot_address": lot.address if lot else "Unknown",
+                "slot_status": slot.status if slot else "Unknown"
+            })
+
+        return result, 200
 
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')

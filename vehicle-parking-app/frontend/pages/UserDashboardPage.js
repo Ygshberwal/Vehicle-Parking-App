@@ -20,6 +20,7 @@ export default {
         :key="booking.id"
         :id="booking.id"
         :s_id="booking.s_id"
+        :lot_name="booking.lot_name"
         :parking_timestamp="booking.parking_timestamp"
         :leaving_timestamp="booking.leaving_timestamp"
         :cost="booking.cost"
@@ -27,6 +28,12 @@ export default {
         />
     </div>
     </div>
+
+    <div v-else class="text-center mt-5">
+    <p class="text-muted fs-5">No bookings found.</p>
+    </div>
+</div>
+
   `,
   data() {
     return {
