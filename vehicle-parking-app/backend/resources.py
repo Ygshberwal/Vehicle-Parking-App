@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import ceil
 from flask import jsonify, request, current_app as app
 from flask_restful import Api, Resource, fields, marshal_with
 from flask_security import auth_required, current_user
@@ -246,6 +247,7 @@ class BookSlotAPI(Resource):
 
         db.session.add(reservation)
         db.session.commit()
+
         return {"message": "Slot booked", "slot_id": slot.id, "parking_timestamp": reservation.parking_timestamp.strftime("%Y-%m-%d %H:%M:%S")}, 201
     
 
@@ -274,6 +276,43 @@ class BookingList(Resource):
 
         return result, 200
 
+class ReleaseSlotAPI(Resource):
+    @auth_required('token')
+    def put(self, booking_id):
+        booking = ReserveParkingSlot.query.get(booking_id)
+
+        if not booking or booking.leaving_timestamp:
+            return {"message": "Invalid or already released booking."}, 400
+
+        booking.leaving_timestamp = datetime.now()
+
+
+        # To get rate: ReserveParkingSlot -> ParkingSlot -> ParkingLot(rate)
+        slot = ParkingSlot.query.get(booking.s_id)
+        if not slot:
+            return {"message": "Slot not found."}, 404
+
+        lot = ParkingLot.query.get(slot.lot_id)
+        if not lot:
+            return {"message": "Lot not found."}, 404
+
+        # Duration in hours
+        duration = ceil((booking.leaving_timestamp - booking.parking_timestamp).total_seconds() / 3600)
+        booking.cost = int(duration * lot.price)
+
+        # Free the slot (optional)
+        slot.status = 'available'
+        lot.available_slot += 1
+        lot.occupied_slot -= 1
+
+        db.session.commit()
+
+        return {
+            "message": "Slot released successfully.",
+            "leaving_timestamp": booking.leaving_timestamp.isoformat(),
+            "cost": booking.cost
+        }
+
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
@@ -281,4 +320,5 @@ api.add_resource(UserAPI, '/users/<int:user_id>')
 api.add_resource(UserListAPI, '/users')
 api.add_resource(BookSlotAPI, '/lots/<int:lot_id>/book')
 api.add_resource(BookingList, '/user-dashboard/<int:user_id>')
+api.add_resource(ReleaseSlotAPI, '/release-slot/<int:booking_id>')
 
