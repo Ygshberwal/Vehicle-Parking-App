@@ -20,7 +20,7 @@ const routes = [
     {path:'/admin-dashboard', component : AdminDashboardPage, props : true, meta :{requiresLogin : true, role : "admin"}},
     {path:'/users', component : AllUsersPage,  meta :{requiresLogin : true, role : "admin"}},
     {path:'/users/:id', component : UserDisplayPage,  meta :{requiresLogin : true, role : "admin"}},
-    {path:'/user-dashboard/:id', component : UserDashboardPage, props : true, meta :{requiresLogin : true, role : "user"}},
+    {path:'/user-dashboard/:id', component : UserDashboardPage, props : true},
     {path:'/add-lot', component : AddParkingLot},
     {path:'/lots/:id/update-lot', component : UpdateParkingLot},
 ]

@@ -31,11 +31,15 @@ export default {
             </li>
 
             <li class="nav-item" v-if="$store.state.role === 'user'">
-              <router-link class="nav-link" :to="'/user-dashboard/' + $store.state.user_id">User Dashboard</router-link>
+            <router-link class="nav-link" :to="'/user-dashboard/' + $store.state.user_id">User Dashboard</router-link>
             </li>
-
+            
             <li class="nav-item">
-              <router-link class="nav-link" to="/lots">Lots</router-link>
+            <router-link class="nav-link" to="/lots">Lots</router-link>
+            </li>
+            
+            <li class="nav-item" v-if="$store.state.role === 'admin'">
+              <router-link class="nav-link" :to="'/user-dashboard/' + $store.state.user_id">Bookings</router-link>
             </li>
 
             <li class="nav-item" v-if="$store.state.role === 'user'">

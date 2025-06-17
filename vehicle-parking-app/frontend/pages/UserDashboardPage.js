@@ -8,9 +8,10 @@ export default {
   template: `
     <div class="container my-5">
     <div class="text-center mb-4">
-    <h1 class="fw-bold">User Dashboard</h1>
+    <h1 class="fw-bold" v-if="$store.state.role === 'user'">User Dashboard</h1>
     <hr class="w-25 mx-auto">
     <h3 class="text-secondary">Your Bookings</h3>
+    <hr class="w-25 mx-auto">
     </div>
 
     <div v-if="bookings.length">
