@@ -271,8 +271,11 @@ class BookingList(Resource):
                 "vehicle_no": booking.vehicle_no,
                 "lot_name": lot.location_name if lot else "Unknown",
                 "lot_address": lot.address if lot else "Unknown",
-                "slot_status": slot.status if slot else "Unknown"
+                "slot_status": slot.status if slot else "Unknown",
+                "duration": ceil((booking.leaving_timestamp - booking.parking_timestamp).total_seconds() / 3600) if booking.leaving_timestamp else None,
             })
+        result = sorted(result, key=lambda x: (x["slot_status"], x["parking_timestamp"]), reverse=True)
+
 
         return result, 200
 

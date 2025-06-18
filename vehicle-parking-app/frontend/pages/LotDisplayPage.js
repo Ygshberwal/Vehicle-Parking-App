@@ -11,7 +11,7 @@ export default {
         <p>Available Slots {{lot.available_slot}} </p>
         <p>Occupied Slots {{lot.occupied_slot}} </p>
         <button 
-            class="btn btn-success" v-if="$store.state.role === 'user'"
+            class="btn btn-success"
             @click="bookSlot" 
             :disabled="lot.available_slot <= 0"
             >

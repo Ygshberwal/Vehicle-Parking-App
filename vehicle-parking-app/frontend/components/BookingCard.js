@@ -7,7 +7,8 @@ export default {
         parking_timestamp: String,
         leaving_timestamp: String,
         cost: Number,
-        vehicle_no: String
+        vehicle_no: String,
+        duration: Number
     },
     data() {
         return {
@@ -59,12 +60,13 @@ export default {
     <div class="row py-3 border-bottom align-items-center">
         <div class="col-md-2"><strong>Slot ID:</strong> {{ s_id }}</div>
         <div class="col-2 text-truncate"><strong>Lot:</strong> {{ lot_name }} </div>
-        <div class="col-md-3"><strong>Parked at:</strong> {{ new Date(parking_timestamp).toLocaleString() }}</div>
+        <div class="col-md-3"><strong>Parked at:</strong> {{ new Date(parking_timestamp).toLocaleString() }} </div>
         <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
             <strong>Status:</strong>
             <span :class="status === 'Active' ? 'text-success' : 'text-muted'"> {{ status }} </span>
         </div>
         <div class="col-md-1"><strong>₹{{ localCost || 0 }}</strong></div>
+        <div v-if="status != 'Active'"><strong>Duration:</strong> {{ duration}} hours </div>
         <div v-if="status === 'Active'" class="col-md-2">
         <button @click="relaseSlot" class="btn btn-sm btn-outline-success">
             Release

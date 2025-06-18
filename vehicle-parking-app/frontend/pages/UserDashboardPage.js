@@ -26,6 +26,7 @@ export default {
         :leaving_timestamp="booking.leaving_timestamp"
         :cost="booking.cost"
         :vehicle_no="booking.vehicle_no"
+        :duration="booking.duration"
         />
     </div>
     </div>
