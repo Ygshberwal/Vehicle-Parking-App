@@ -3,7 +3,7 @@ from flask import current_app as app, jsonify, render_template, request
 from flask_security import auth_required
 from flask_security.utils import hash_password, verify_password
 from backend.models.models import db
-from backend.celery.tasks import add
+from backend.celery.tasks import add, create_csv
 from celery.result import AsyncResult
 import os
 
@@ -32,6 +32,11 @@ def getData(id):
         return {'result' : result.result}, 200
     else :
         return {'message': 'task not ready'}, 405
+    
+@app.get('/create-csv')
+def createCSV():
+    task = create_csv.delay()          #use delay to run it in celery
+    return {'task_id': task.id}, 200
 
 @app.route('/debug-template')
 def debug_template():
