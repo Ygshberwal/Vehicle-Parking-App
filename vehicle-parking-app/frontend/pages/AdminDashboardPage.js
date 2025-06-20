@@ -5,6 +5,7 @@ export default {
     <div>
         <h1>This is admin dashboard </h1> 
         <hr>
+        <button @click="create_csv"> Get Lot data </button> 
         <h2> Parking Lots </h2>
         <hr>
         <LotCard 
@@ -29,8 +30,26 @@ export default {
     },
 
     methods : {
+        async create_csv(){
+            const res = await fetch(location.origin + '/create-csv', {
+                headers : {
+                    'Authentication-Token' : this.$store.state.auth_token
+                }
+            })
+            const task_id = (await res.json()).task_id
 
+            const interval = setInterval(async() => {
+                const res = await fetch(`${location.origin}/get-csv/${task_id}` )
+                if (res.ok){
+                    console.log('data is ready')
+                    window.open(`${location.origin}/get-csv/${task_id}`)
+                    clearInterval(interval)
+                }
+
+            }, 100)
+        },
     },
+    
     // fetch data from /api/lots
     async mounted(){        // run automatically when page is imported
         const res = await fetch(location.origin + '/api/lots', {

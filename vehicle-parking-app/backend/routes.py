@@ -1,6 +1,6 @@
 from datetime import datetime
-from flask import current_app as app, jsonify, render_template, request
-from flask_security import auth_required
+from flask import current_app as app, jsonify, render_template, request, send_file
+from flask_security import auth_required, roles_required
 from flask_security.utils import hash_password, verify_password
 from backend.models.models import db
 from backend.celery.tasks import add, create_csv
@@ -34,9 +34,20 @@ def getData(id):
         return {'message': 'task not ready'}, 405
     
 @app.get('/create-csv')
+@auth_required('token')
 def createCSV():
     task = create_csv.delay()          #use delay to run it in celery
     return {'task_id': task.id}, 200
+
+@app.route('/get-csv/<id>')
+# @auth_required('token')
+def getCSV(id):
+    result = AsyncResult(id)
+
+    if result.ready():
+        return send_file(f'./backend/celery/user-downloads/{result.result}', as_attachment=True), 200
+    else:
+        return {'message' : 'task not ready'}, 405
 
 @app.route('/debug-template')
 def debug_template():
@@ -100,6 +111,8 @@ def register():
     
 
 @app.route('/add-lot', methods=['POST'])
+@auth_required('token')
+@roles_required('admin')
 def addLot():
     data =  request.get_json()        # whatever we get from request, we store it in data variable
 
