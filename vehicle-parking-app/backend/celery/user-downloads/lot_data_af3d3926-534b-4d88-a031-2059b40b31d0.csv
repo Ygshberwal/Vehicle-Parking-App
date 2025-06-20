@@ -1,0 +1,4 @@
+id,location_name,price,address,pincode,available_slot,occupied_slot
+1,CP,50,"Rajeev Chowk, New Delhi",110001,17,3
+2,IIT Catalyst,20,"North Campus, IIT Mandi",175005,8,4
+3,CV Raman,40,"IIT Mandi, HP",175005,30,0

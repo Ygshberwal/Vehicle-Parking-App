@@ -1,0 +1,4 @@
+id,name,email,password,dp,pincode,fs_uniquifier,active
+1,admin,admin@parking.com,$2b$12$T3qEpNAvQEe05KW4FAGbFOY7DOAYjim1mreEox3wSRi22xc8V3FKG,,,1c42fb2d-179b-4b3b-8e53-06e16cf20a78,True
+2,user01,user01@parking.com,$2b$12$D7F08O/rCPw6U7//8gReHOdWFpioSYmHhkxwx3tiUjU7QrBhry4ke,,,0b8f2afd-15f2-4207-84e9-73b4f4578333,True
+3,Test,testing@parking.com,$2b$12$n42E0LOJlyktDSAziJJuBOL9pAvNBJnK8rnt46tOS5IKsXukVwpDy,,,4104d6a9-adfe-4c67-a6cd-281dba658005,False

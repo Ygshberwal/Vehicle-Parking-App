@@ -5,7 +5,7 @@ export default {
     <div>
         <h1>This is admin dashboard </h1> 
         <hr>
-        <h2> Parking Lots &ensp;&ensp; <button @click="create_csv" class="btn btn-sm btn-outline-primary"> Get Lot data </button> </h2>
+        <h2> Parking Lots &ensp;&ensp; <button @click="lot_create" class="btn btn-sm btn-outline-primary"> Get Lot data </button> </h2>
         <hr>
         <LotCard 
             v-for="lot in lots" 
@@ -29,8 +29,8 @@ export default {
     },
 
     methods : {
-        async create_csv(){
-            const res = await fetch(location.origin + '/create-csv', {
+        async lot_create(){
+            const res = await fetch(location.origin + '/lot-create', {
                 headers : {
                     'Authentication-Token' : this.$store.state.auth_token
                 }
@@ -38,10 +38,10 @@ export default {
             const task_id = (await res.json()).task_id
 
             const interval = setInterval(async() => {
-                const res = await fetch(`${location.origin}/get-csv/${task_id}` )
+                const res = await fetch(`${location.origin}/lot-download/${task_id}` )
                 if (res.ok){
                     console.log('data is ready')
-                    window.open(`${location.origin}/get-csv/${task_id}`)
+                    window.open(`${location.origin}/lot-download/${task_id}`)
                     clearInterval(interval)
                 }
 
