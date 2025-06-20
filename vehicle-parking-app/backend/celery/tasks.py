@@ -1,7 +1,7 @@
 from celery import shared_task
 import time
 import flask_excel 
-from backend.models.models import ParkingLot
+from backend.models.models import ParkingLot, User
 
 @shared_task(ignore_result = False)
 def add(x,y):
@@ -19,5 +19,17 @@ def lot_csv(self):
 
     with open(f'./backend/celery/user-downloads/{file_name}', 'wb') as file:
         file.write(lot_out.data)
+
+    return file_name
+
+@shared_task(ignore_result=False)
+def users_csv():
+    resource = User.query.all()
+    file_name = 'users_data.csv'
+    column_names = [column.name for column in User.__table__.columns]
+    users_out = flask_excel.make_response_from_query_sets(resource, column_names = column_names, file_type='csv')
+
+    with open(f'./backend/celery/user-downloads/{file_name}', 'wb') as file:
+        file.write(users_out.data)
 
     return file_name

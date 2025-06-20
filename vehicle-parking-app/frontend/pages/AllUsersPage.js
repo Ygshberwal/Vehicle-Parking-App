@@ -8,6 +8,7 @@ export default {
             <h1 class="fw-bold">List of all Users</h1>
             <h5 class="text-muted">Logged in as: <span class="text-dark">{{ $store.state.role }}</span></h5>
             <h5 class="text-muted">Name: <span class="text-dark">{{ $store.state.name }}</span></h5>
+            <button @click="users_create" class="btn btn-sm btn-outline-primary"> Export Users data </button> 
         </div>
 
         
@@ -35,8 +36,26 @@ export default {
     },
 
     methods : {
+        async users_create(){
+            const res = await fetch(location.origin + '/users-create', {
+                headers : {
+                    'Authentication-Token' : this.$store.state.auth_token
+                }
+            })
+            const task_id = (await res.json()).task_id
 
+            const interval = setInterval(async() => {
+                const res = await fetch(`${location.origin}/users-download/${task_id}` )
+                if (res.ok){
+                    console.log('data is ready')
+                    window.open(`${location.origin}/users-download/${task_id}`)
+                    clearInterval(interval)
+                }
+
+            }, 100)
+        },
     },
+
     // fetch data from /api/users
     async mounted(){        // run automatically when page is imported
         const res = await fetch(location.origin + '/api/users', {
