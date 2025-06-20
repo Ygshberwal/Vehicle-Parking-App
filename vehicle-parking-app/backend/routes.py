@@ -3,7 +3,7 @@ from flask import current_app as app, jsonify, render_template, request, send_fi
 from flask_security import auth_required, roles_required
 from flask_security.utils import hash_password, verify_password
 from backend.models.models import db
-from backend.celery.tasks import add, lot_csv, users_csv
+from backend.celery.tasks import add, bookings_csv, lot_csv, users_csv
 from celery.result import AsyncResult
 import os
 
@@ -58,6 +58,22 @@ def users_create():
 @app.route('/users-download/<id>')
 # @auth_required('token')
 def users_download(id):
+    result = AsyncResult(id)
+    if result.ready():
+        return send_file(f'./backend/celery/user-downloads/{result.result}', as_attachment=True), 200
+    else:
+        return {'message' : 'task not ready'}, 405
+    
+
+@app.get('/bookings-create')
+@auth_required('token')
+def bookings_create():
+    task = bookings_csv.delay()          #use delay to run it in celery
+    return {'task_id': task.id}, 200
+
+@app.route('/bookings-download/<id>')
+# @auth_required('token')
+def bookings_download(id):
     result = AsyncResult(id)
     if result.ready():
         return send_file(f'./backend/celery/user-downloads/{result.result}', as_attachment=True), 200
