@@ -5,8 +5,7 @@ export default {
     <div>
         <h1>This is admin dashboard </h1> 
         <hr>
-        <button @click="create_csv"> Get Lot data </button> 
-        <h2> Parking Lots </h2>
+        <h2> Parking Lots &ensp;&ensp; <button @click="create_csv" class="btn btn-sm btn-outline-primary"> Get Lot data </button> </h2>
         <hr>
         <LotCard 
             v-for="lot in lots" 
@@ -49,7 +48,7 @@ export default {
             }, 100)
         },
     },
-    
+
     // fetch data from /api/lots
     async mounted(){        // run automatically when page is imported
         const res = await fetch(location.origin + '/api/lots', {
