@@ -225,6 +225,11 @@ class UserListAPI(Resource):
 class BookSlotAPI(Resource):
     @auth_required('token')
     def post(self, lot_id):
+        data = request.get_json()
+        vehicle_number = data.get("vehicle_number")
+        if not vehicle_number or not vehicle_number.strip():
+            return {"message": "Vehicle number is required"}, 400
+        
         lot = ParkingLot.query.get(lot_id)
         if not lot:
             return {"message": "Lot not found"}, 404
@@ -243,7 +248,8 @@ class BookSlotAPI(Resource):
         reservation = ReserveParkingSlot(
             u_id = current_user.id,
             s_id = slot.id,
-            parking_timestamp = datetime.now()
+            parking_timestamp = datetime.now(),
+            vehicle_no = vehicle_number
         )
 
         db.session.add(reservation)
