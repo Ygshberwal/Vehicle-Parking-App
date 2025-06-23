@@ -2,6 +2,7 @@ from celery import shared_task
 import time
 import flask_excel 
 from backend.models.models import ParkingLot, ReserveParkingSlot, User
+from backend.celery.mail_service import send_email
 
 @shared_task(ignore_result = False)
 def add(x,y):
@@ -45,3 +46,7 @@ def bookings_csv():
         file.write(bookings_out.data)
 
     return file_name
+
+@shared_task(ignore_result = True)
+def email_reminder(to, subject, content):                  #just call the send_email function mail_service.py
+    send_email(to, subject, content)

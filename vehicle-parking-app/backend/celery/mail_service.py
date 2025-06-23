@@ -18,4 +18,4 @@ def send_email(to, subject, content):
         client.send_message(msg)
         client.quit()
 
-send_email('yogesh@example', 'Test Email', '<h1> Hello there </h1>')
+# send_email('yogesh@example', 'Test Email', '<h1> Hello there </h1>')

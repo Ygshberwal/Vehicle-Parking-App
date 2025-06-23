@@ -35,6 +35,7 @@ celery_app = celery_init_app(app)
 
 import backend.models.create_initial_data
 import backend.routes
+import backend.celery.celery_schedule
 
 #flask-excel 
 excel.init_excel(app)
