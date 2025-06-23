@@ -3,7 +3,8 @@ from math import ceil
 from flask import jsonify, request, current_app as app
 from flask_restful import Api, Resource, fields, marshal_with
 from flask_security import auth_required, current_user
-from backend.models.models import ParkingLot, ParkingSlot, ReserveParkingSlot, User, db
+from backend.models.models import ParkingLot, ParkingSlot, ReserveParkingSlot, Role, User, db
+from sqlalchemy.orm import joinedload
 
 cache = app.cache
 api = Api(prefix='/api')
@@ -213,12 +214,12 @@ class UserAPI(Resource):
             return {"error": str(e)}, 500
 
 class UserListAPI(Resource):
-
     @auth_required('token')
-    @cache.cached(timeout = 5, key_prefix = "lot_list")                 # get fxn does not take any parameter so cached
+    @cache.cached(timeout = 5, key_prefix = "users_list")                 # get fxn does not take any parameter so cached
     @marshal_with(user_fields)
     def get(self):
-        users = User.query.all()
+        users = User.query.filter(~User.roles.any(Role.name == 'admin')).options(joinedload(User.roles)).all()
+
         return users
 
 class BookSlotAPI(Resource):
