@@ -16,13 +16,26 @@ export default {
     </div>
 
     <div v-if="bookings.length">
+    <div class="row py-3 border-bottom align-items-center">
+        <div class="col-md-2"><strong>Vehicle No.</strong></div>
+        <div class="col-2 text-truncate"><strong>Lot</strong> </div>
+        <div class="col-md-3"><strong>Parked at</strong> </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
+            <strong>Status:</strong>
+        </div>
+        <div class="col-md-1"><strong>Cost</strong></div>
+        <div ><strong>Duration</strong> </div>
+        <div >
+        
+        </div>
+    </div>
     <div class="list-group">
         <BookingCard
         v-for="booking in bookings"
         :key="booking.id"
         :id="booking.id"
         :s_id="booking.s_id"
-        :bookings_name="booking.bookings_name"
+        :lot_name="booking.lot_name"
         :parking_timestamp="booking.parking_timestamp"
         :leaving_timestamp="booking.leaving_timestamp"
         :cost="booking.cost"
