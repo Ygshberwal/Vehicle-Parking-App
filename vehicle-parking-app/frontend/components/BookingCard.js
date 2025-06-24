@@ -59,7 +59,7 @@ export default {
     },
     template: `
     
-    <div class="row py-3 border-bottom align-items-center">
+    <div class="row py-3 border-bottom text-center align-items-center">
         <div class="col-md-2">{{ vehicle_no }}</div>
         <div class="col-2 text-truncate">{{ lot_name }} </div>
         <div class="col-md-3"> {{ new Date(parking_timestamp).toLocaleString() }} </div>
@@ -67,8 +67,8 @@ export default {
             <span :class="status === 'Active' ? 'text-success' : 'text-muted'"> {{ status }} </span>
         </div>
         <div class="col-md-1"><strong>₹{{ localCost || 0 }}</strong></div>
-        <div v-if="status != 'Active'" >{{ duration}} hours </div>
-        <div v-if="status === 'Active'" class="col-md-2">
+        <div class="col-md-2" v-if="status != 'Active'"  >{{ duration}} hours </div>
+        <div class="col-md-2" v-if="status === 'Active'">
         <button @click="relaseSlot" class="btn btn-sm btn-outline-success">
             Release
         </button>
