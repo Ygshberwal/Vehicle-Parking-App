@@ -227,36 +227,53 @@ class BookSlotAPI(Resource):
     def post(self, lot_id):
         data = request.get_json()
         vehicle_number = data.get("vehicle_number")
+
         if not vehicle_number or not vehicle_number.strip():
             return {"message": "Vehicle number is required"}, 400
-        
+
+        vehicle_number = vehicle_number.strip().upper()
+
         lot = ParkingLot.query.get(lot_id)
         if not lot:
             return {"message": "Lot not found"}, 404
 
+        existing_reservation = (
+            db.session.query(ReserveParkingSlot)
+            .filter(
+                ReserveParkingSlot.vehicle_no == vehicle_number,
+                ReserveParkingSlot.leaving_timestamp == None
+            )
+            .first()
+        )
+        if existing_reservation:
+            return {"message": "This vehicle is already parked"}, 400
+
         if lot.available_slot <= 0:
             return {"message": "No available slots"}, 400
 
-        slot = ParkingSlot.query.filter_by(lot_id = lot.id, status="available").first()
+        slot = ParkingSlot.query.filter_by(lot_id=lot.id, status="available").first()
         if not slot:
             return {"message": "Lot not found"}, 404
-        
+
         slot.status = "occupied"
-        lot.available_slot-=1
-        lot.occupied_slot+=1
+        lot.available_slot -= 1
+        lot.occupied_slot += 1
 
         reservation = ReserveParkingSlot(
-            u_id = current_user.id,
-            s_id = slot.id,
-            parking_timestamp = datetime.now(),
-            vehicle_no = vehicle_number
+            u_id=current_user.id,
+            s_id=slot.id,
+            parking_timestamp=datetime.now(),
+            vehicle_no=vehicle_number
         )
 
         db.session.add(reservation)
         db.session.commit()
 
-        return {"message": "Slot booked", "slot_id": slot.id, "parking_timestamp": reservation.parking_timestamp.strftime("%Y-%m-%d %H:%M:%S")}, 201
-    
+        return {
+            "message": "Slot booked",
+            "slot_id": slot.id,
+            "parking_timestamp": reservation.parking_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        }, 201
 
 class BookingList(Resource):
     @auth_required('token')
@@ -268,21 +285,35 @@ class BookingList(Resource):
             slot = ParkingSlot.query.get(booking.s_id)
             lot = ParkingLot.query.get(slot.lot_id) if slot else None
 
+            parking_ts = booking.parking_timestamp
+
             result.append({
                 "id": booking.id,
                 "u_id": booking.u_id,
                 "s_id": booking.s_id,
-                "parking_timestamp": booking.parking_timestamp.isoformat(),
+                "parking_timestamp": parking_ts.isoformat(),
                 "leaving_timestamp": booking.leaving_timestamp.isoformat() if booking.leaving_timestamp else None,
                 "cost": booking.cost,
                 "vehicle_no": booking.vehicle_no,
                 "lot_name": lot.location_name if lot else "Unknown",
                 "lot_address": lot.address if lot else "Unknown",
                 "slot_status": slot.status if slot else "Unknown",
-                "duration": ceil((booking.leaving_timestamp - booking.parking_timestamp).total_seconds() / 3600) if booking.leaving_timestamp else None,
+                "duration": ceil((booking.leaving_timestamp - parking_ts).total_seconds() / 3600) if booking.leaving_timestamp else None,
+                "_is_active": booking.leaving_timestamp is None,
+                "_parking_ts": parking_ts,  # for sorting
             })
-        result = sorted(result, key=lambda x: (x["slot_status"], x["parking_timestamp"]), reverse=True)
 
+        # Sort: Active bookings first, then by latest parking timestamp
+        result.sort(
+            key=lambda x: (
+                not x["_is_active"],                # Active first (False comes before True)
+                -x["_parking_ts"].timestamp()       # Most recent timestamp first
+            )
+        )
+
+        for item in result:
+            del item["_is_active"]
+            del item["_parking_ts"]
 
         return result, 200
 
