@@ -1,39 +1,75 @@
 export default {
     props :['id'],
     template :`
-    <div class="jumbotron">
-        <h2>Lot Name: {{lot.location_name}} </h2>
-        <p>Lot Address: {{lot.address}} </p>
-        <p>Pincode: {{lot.pincode}} </p>
-        <hr>
-        <p>Price per hour: ₹{{lot.price}} </p>
-        <p>Max Capacity: {{lot.available_slot+lot.occupied_slot}} </p>
-        <p>Available Slots {{lot.available_slot}} </p>
-        <p>Occupied Slots {{lot.occupied_slot}} </p>
-        <div v-if="showInput">
-            <p>
-                <label>Vehicle Number:</label>
-                <input v-model="vehicle_number" type="text" placeholder="e.g. MH12AB1234" class="form-control" />
-            </p>
-            <button 
-                class="btn btn-primary"
-                @click="confirmBooking"
-                :disabled="!vehicle_number.trim()"
-            >
-                Confirm Booking
-            </button>
-            <button class="btn btn-secondary ml-2" @click="showInput = false , vehicle_number='' ">Cancel</button>
+    <div class="container py-5">
+      <div class="bg-white p-5 shadow rounded" style="border-left: 6px solid #0d6efd;">
+        <h2 class="mb-3 text-primary fw-semibold">
+          <i class="bi bi-geo-alt-fill me-2"></i>{{ lot.location_name }}
+        </h2>
+        <p class="text-muted"><i class="bi bi-map me-2"></i>{{ lot.address }}</p>
+        <p class="text-muted mb-4">Pincode: {{ lot.pincode }}</p>
+
+        <div class="row mb-4 g-4">
+          <div class="col-md-4">
+            <div class="text-muted small">Price per Hour</div>
+            <div class="fs-5 fw-medium">₹{{ lot.price }}</div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-muted small">Max Capacity</div>
+            <div class="fs-5 fw-medium">{{ lot.available_slot + lot.occupied_slot }}</div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-muted small">Availability</div>
+            <div>
+              <div>
+              <span class="text-success">{{ lot.available_slot }} Available</span> -
+              <span class="text-danger">{{ lot.occupied_slot }} Occupied</span>
+            </div>
+            </div>
+          </div>
         </div>
 
-        <div v-else>
+        <hr class="my-4">
+
+
+        <div v-if="showInput" class=" pt-4">
+          <h5 class="mb-3">Book a Slot</h5>
+          <div class="mb-3">
+            <label class="form-label">Vehicle Number</label>
+            <input 
+              v-model="vehicle_number" 
+              type="text" 
+              class="form-control" 
+              placeholder="e.g. MH12AB1234"
+            />
+          </div>
+          <div class="pt-3">
             <button 
-                class="btn btn-success"
-                @click="showInput = true"
-                :disabled="lot.available_slot <= 0"
+              class="btn btn-outline-success px-4"
+              @click="confirmBooking"
+              :disabled="!vehicle_number.trim()"
             >
-                Book Slot
+              Confirm Booking
             </button>
+            <button 
+              class="btn btn-outline-secondary px-4"
+              @click="showInput = false; vehicle_number='';"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
+
+        <div v-else class="pt-3">
+          <button 
+            class="btn btn-outline-primary px-4"
+            @click="showInput = true"
+            :disabled="lot.available_slot <= 0"
+          >
+            Book a Slot
+          </button>
+        </div>
+      </div>
     </div>
     `,
     data(){

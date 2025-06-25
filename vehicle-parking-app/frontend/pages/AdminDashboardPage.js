@@ -2,22 +2,34 @@ import LotCard from "../components/LotCard.js";
 
 export default {
     template : `
-    <div>
-        <h1>This is admin dashboard </h1> 
-        <hr>
-        <h2> Parking Lots &ensp;&ensp; <button @click="lot_create" class="btn btn-sm btn-outline-primary"> Get Lot data </button> </h2>
-        <hr>
-        <LotCard 
-            v-for="lot in lots" 
-            :lot_id="lot.id" 
-            :location_name="lot.location_name" 
-            :address="lot.address" 
-            :pincode="lot.pincode" 
-            :price="lot.price" 
-            :available_slot="lot.available_slot"
-            :occupied_slot="lot.occupied_slot"
-        />
+    <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h1 class="text-dark">Admin Dashboard</h1>
     </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2 class="text-secondary">Parking Lots</h2>
+      <button @click="lot_create" class="btn btn-outline-secondary btn-sm mt-2"
+          style="border-radius: 5px;">
+        Fetch Lot Data
+      </button>
+    </div>
+    
+    <div class="row g-4 mt-3">
+      <div class="col-md-6 col-lg-4" v-for="lot in lots" :key="lot.id">
+      
+        <LotCard 
+          :lot_id="lot.id"
+          :location_name="lot.location_name"
+          :address="lot.address"
+          :pincode="lot.pincode"
+          :price="lot.price"
+          :available_slot="lot.available_slot"
+          :occupied_slot="lot.occupied_slot"
+        />
+      </div>
+    </div>
+  </div>
     `,
 
     // this data will contain all the parking lots
