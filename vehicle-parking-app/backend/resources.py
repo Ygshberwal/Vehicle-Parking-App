@@ -278,7 +278,10 @@ class BookSlotAPI(Resource):
 class BookingList(Resource):
     @auth_required('token')
     def get(self, user_id):
-        bookings = ReserveParkingSlot.query.filter_by(u_id=user_id).all()
+        if current_user.roles[0]=="admin":
+            bookings = ReserveParkingSlot.query.all()
+        else:
+            bookings = ReserveParkingSlot.query.filter_by(u_id=user_id).all()
 
         result = []
         for booking in bookings:
@@ -298,7 +301,6 @@ class BookingList(Resource):
                 "lot_name": lot.location_name if lot else "Unknown",
                 "lot_address": lot.address if lot else "Unknown",
                 "slot_status": slot.status if slot else "Unknown",
-                "duration": ceil((booking.leaving_timestamp - parking_ts).total_seconds() / 3600) if booking.leaving_timestamp else None,
                 "_is_active": booking.leaving_timestamp is None,
                 "_parking_ts": parking_ts,  # for sorting
             })

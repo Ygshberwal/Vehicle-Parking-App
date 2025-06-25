@@ -17,7 +17,8 @@ export default {
 
         <div v-if="bookings.length">
             <div class="row py-3 fw-bold text-center border-bottom bg-white" style="position: sticky; top: 0; z-index: 1000;">
-                <div class="col-md-2"><strong>Vehicle No.</strong></div>
+                <div class="col-md-2" v-if="$store.state.role === 'admin'"><strong>User</strong></div>
+                <div class="col-md-2" v-if="$store.state.role === 'user'"><strong>Vehicle No.</strong></div>
                 <div class="col-2 text-truncate"><strong>Lot</strong> </div>
                 <div class="col-md-3"><strong>Parked at</strong> </div>
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-2"> <strong>Status</strong> </div>
@@ -30,6 +31,7 @@ export default {
                 :key="booking.id"
                 :id="booking.id"
                 :s_id="booking.s_id"
+                :u_id="booking.u_id"
                 :lot_name="booking.lot_name"
                 :parking_timestamp="booking.parking_timestamp"
                 :leaving_timestamp="booking.leaving_timestamp"

@@ -3,13 +3,12 @@ export default {
     props: {
         id: Number,
         s_id: Number,
+        u_id: Number,
         lot_name: String,
         parking_timestamp: String,
         leaving_timestamp: String,
         cost: Number,
         vehicle_no: String,
-        duration: Number,
-
     },
     data() {
         return {
@@ -20,6 +19,12 @@ export default {
     computed: {
         status() {
             return this.localLeavingTimestamp ? 'Completed' : 'Active';
+        },
+        computedDuration(){
+            if(!this.localLeavingTimestamp) return null;
+            const start = new Date(this.parking_timestamp)
+            const end = new Date(this.localLeavingTimestamp)
+            return Math.ceil((end-start)/(36000))
         }
     },
     watch: {
@@ -47,6 +52,7 @@ export default {
 
             if (response.ok) {
                 this.localLeavingTimestamp = data.leaving_timestamp;
+                this.duration = data.parking_timestamp - data.leaving_timestamp
                 this.localCost = data.cost;
                 alert("Slot released successfully!");
             } else {
@@ -60,14 +66,15 @@ export default {
     template: `
     
     <div class="row py-3 border-bottom text-center align-items-center">
-        <div class="col-md-2">{{ vehicle_no }}</div>
+        <div class="col-md-2" v-if="$store.state.role === 'user'">{{ vehicle_no }}</div>
+        <div class="col-md-2" v-if="$store.state.role === 'admin'">{{ u_id }}</div>
         <div class="col-2 text-truncate">{{ lot_name }} </div>
         <div class="col-md-3"> {{ new Date(parking_timestamp).toLocaleString() }} </div>
         <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
             <span :class="status === 'Active' ? 'text-success' : 'text-muted'"> {{ status }} </span>
         </div>
         <div class="col-md-1"><strong>₹{{ localCost || 0 }}</strong></div>
-        <div class="col-md-2" v-if="status != 'Active'"  >{{ duration}} hours </div>
+        <div class="col-md-2" v-if="status != 'Active'"  >{{ computedDuration}} hours </div>
         <div class="col-md-2" v-if="status === 'Active'">
         <button @click="relaseSlot" class="btn btn-sm btn-outline-success">
             Release
