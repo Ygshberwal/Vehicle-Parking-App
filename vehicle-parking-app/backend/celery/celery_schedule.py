@@ -10,9 +10,9 @@ def setup_periodic_tasks(sender, **kwargs):
     # sender.add_periodic_task(10.0, email_reminder.s('yogesh@example', 'Test Email', '<h1> Hello there celery schedule</h1>'))      
     
     # sending email at a specific time, every day
-    sender.add_periodic_task(crontab(hour=12, minute=53), email_reminder.s('yogesh@example', 'Time Specific', '<h1> Hello there celery schedule</h1>'), name='daily reminder')      
+    sender.add_periodic_task(crontab(hour=17, minute=3), email_reminder.s('yogesh@example', 'Time Specific', '<h1> Hello, there is your daily scheduled mail</h1>'), name='daily reminder')      
     
     # sending email at a specific time, on every monday
-    sender.add_periodic_task(crontab(hour=12, minute=53, day_of_week='monday'), email_reminder.s('yogesh@example', 'Time Specific', '<h1> Hello there celery schedule</h1>'), name='weekly reminder')      
+    sender.add_periodic_task(crontab(hour=17, minute=5, day_of_week='tuesday'), email_reminder.s('yogesh@example', 'Time Specific', '<h1> Hello, there is your weekly scheduled mail</h1>'), name='weekly reminder')      
 
 
