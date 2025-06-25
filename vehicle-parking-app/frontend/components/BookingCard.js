@@ -24,7 +24,7 @@ export default {
             if(!this.localLeavingTimestamp) return null;
             const start = new Date(this.parking_timestamp)
             const end = new Date(this.localLeavingTimestamp)
-            return Math.ceil((end-start)/(36000))
+            return Math.ceil((end-start)/(1000 * 60 * 60))
         }
     },
     watch: {
@@ -36,7 +36,7 @@ export default {
         }
     },
     methods: {
-        async relaseSlot() {
+        async releaseSlot() {
             if (this.status === 'Completed') return;
 
             try {
@@ -76,7 +76,7 @@ export default {
         <div class="col-md-1"><strong>₹{{ localCost || 0 }}</strong></div>
         <div class="col-md-2" v-if="status != 'Active'"  >{{ computedDuration}} hours </div>
         <div class="col-md-2" v-if="status === 'Active'">
-        <button @click="relaseSlot" class="btn btn-sm btn-outline-success">
+        <button @click="releaseSlot" class="btn btn-sm btn-outline-success">
             Release
         </button>
         </div>
