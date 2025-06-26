@@ -2,28 +2,26 @@ import UserCard from "../components/UserCard.js";
 
 export default {
     template : `
-    <div class="container py-4">
-        <!-- Page Heading -->
-        <div class="mb-4 text-center">
-            <h1 class="fw-bold">List of all Users</h1>
-            <h5 class="text-muted">Logged in as: <span class="text-dark">{{ $store.state.role }}</span></h5>
-            <h5 class="text-muted">Name: <span class="text-dark">{{ $store.state.name }}</span></h5>
-            <button @click="users_create" class="btn btn-sm btn-outline-primary"> Export Users data </button> 
-        </div>
+    <div class="container mt-4">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="text-dark">User Management</h1>
+        <button @click="users_create" class="btn btn-outline-secondary btn-sm mt-2" style="border-radius: 5px;">
+          Export Users Data
+        </button>
+      </div>
 
-        
-
-        <!-- user Cards -->
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4" v-for="user in users" :key="user.id">
-            <UserCard 
-                :user_id="user.id" 
-                :user_name="user.name" 
-                :email="user.email" 
-                :active="user.active"
-            />
-            </div>
+      <!-- User Cards Grid -->
+      <div class="row g-4 mt-3">
+        <div class="col-md-6 col-lg-4" v-for="user in users" :key="user.id">
+          <UserCard 
+            :user_id="user.id"
+            :user_name="user.name"
+            :email="user.email"
+            :active="user.active"
+          />
         </div>
+      </div>
     </div>
     `,
 
