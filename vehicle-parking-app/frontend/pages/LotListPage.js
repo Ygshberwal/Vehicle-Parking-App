@@ -3,35 +3,35 @@ import SmallLotCard from "../components/SmallLotCard.js";
 
 export default {
     template : `
-    <div class="container py-4">
-        <!-- Page Heading -->
-        <div class="mb-4 text-center">
-            <h1 class="fw-bold">List of Parking Lots</h1>
-            <h5 class="text-muted">Logged in as: <span class="text-dark">{{ $store.state.role }}</span></h5>
-            <h5 class="text-muted">Name: <span class="text-dark">{{ $store.state.name }}</span></h5>
-        </div>
-
-        <!-- Add Lot Button (Admin Only) -->
-        <div class="text-center mb-4" v-if="$store.state.role === 'admin'">
-            <router-link to="/add-lot" class="btn btn-sm btn-outline-primary">
-                ➕ Add Parking Lot 
-            </router-link>
-        </div>
-
-        <!-- Lot Cards -->
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4" v-for="lot in lots" :key="lot.id">
-            <SmallLotCard 
-                :lot_id="lot.id" 
-                :location_name="lot.location_name" 
-                :address="lot.address" 
-                :pincode="lot.pincode" 
-                :price="lot.price" 
-                :available_slot="lot.available_slot"
-            />
+        <div class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="text-dark">List of Parking Lots</h1>
+                    <div class="text-muted medium">
+                        Logged in as: <span class="text-dark fw-semibold">{{ $store.state.role }}</span>
+                        &nbsp;|&nbsp;
+                        Name: <span class="text-dark fw-semibold">{{ $store.state.name }}</span>
+                    </div>
+                </div>
+                <div v-if="$store.state.role === 'admin'">
+                    <router-link to="/add-lot" class="btn btn-outline-secondary btn-sm mt-2" style="border-radius: 5px;">
+                        ➕ Add Parking Lot
+                    </router-link>
+                </div>
+            </div>
+            <div class="row g-4 mt-3">
+                <div class="col-md-6 col-lg-4" v-for="lot in lots" :key="lot.id">
+                <SmallLotCard 
+                    :lot_id="lot.id" 
+                    :location_name="lot.location_name" 
+                    :address="lot.address" 
+                    :pincode="lot.pincode" 
+                    :price="lot.price" 
+                    :available_slot="lot.available_slot"
+                />
+                </div>
             </div>
         </div>
-    </div>
     `,
 
     // this data will contain all the parking lots

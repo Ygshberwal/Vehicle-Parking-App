@@ -2,26 +2,23 @@ export default {
     name: "SmallLotCard",
     props: ['lot_id', 'location_name', 'address', 'pincode', 'price', 'available_slot'],
     template: `
-        <div class="container">
-            <div class="row py-2 border-bottom"
-                style="cursor: pointer;"
-                @click="$router.push('/lots/' + lot_id)" >
-                <div class="col">
-                    <strong>Lot Id: </strong> {{ lot_id }} &ensp;&ensp;
-                    <strong>Location: </strong> {{ location_name}}
+        <div class="card border-0 shadow-sm p-4 mb-4 hover-shadow"
+            style="border-radius: 10px; background-color: #f9fafb; transition: box-shadow 0.3s ease; min-height: 100px; cursor: pointer;"
+            @click="$router.push('/lots/' + lot_id)">
+            <div class="d-flex flex-column h-100">
+                <div class="mb-4">
+                    <h5 class="text-primary fw-semibold mb-2"> Lot ID: {{ lot_id }} </h5>
+                    <p class="text-muted mb-0"> 📍 <strong>Location:</strong> {{ location_name }} </p>
                 </div>
-                <div class="col-auto" v-if="$store.state.role === 'admin'">
-                    <button
-                    @click.stop="deleteLot()"
-                    class="btn btn-sm btn-outline-danger"
-                    title="Delete Parking Lot">
-                    🗑️ Delete
-                    </button>
-                </div>
-                <div class="col-auto" v-if="$store.state.role === 'admin'">
-                    <router-link v-if="$store.state.role === 'admin'" :to="'/lots/' + lot_id + '/update-lot'" class="btn btn-sm btn-outline-success">
-                    ✏️ Edit 
-                    </router-link>
+                <div class=" d-flex justify-content-end" v-if="$store.state.role === 'admin'" @click.stop>
+                    <div class="d-flex">
+                        <button class="btn btn-sm btn-outline-danger mr-3" @click="deleteLot()" title="Delete Parking Lot">
+                            🗑️ Delete
+                        </button>
+                        <router-link  :to="'/lots/' + lot_id + '/update-lot'"  class="btn btn-sm btn-outline-success">
+                            ✏️ Edit
+                        </router-link>
+                    </div>
                 </div>
             </div>
         </div>

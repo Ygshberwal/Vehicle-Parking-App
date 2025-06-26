@@ -19,7 +19,7 @@ export default {
         }
     },
     template: `
-        <div class="card border-0 shadow-sm hover-shadow p-4" 
+        <div class="card border-0 shadow-sm hover-shadow p-4 mb-4" 
         style="border-radius: 6px; background-color: #f9fafb; transition: 0.3s ease; min-height: 300px;">
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <h4 
