@@ -43,7 +43,7 @@ export default {
             </li>
 
             <li class="nav-item" v-if="$store.state.role === 'user'">
-              <router-link class="nav-link" to="/explore">Explore</router-link>
+              <router-link class="nav-link" :to="'/user-stats/' + $store.state.user_id">Statistics</router-link>
             </li>
           </template>
         </ul>

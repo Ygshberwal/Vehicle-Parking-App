@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from math import ceil
 from flask import jsonify, request, current_app as app
@@ -356,6 +357,41 @@ class ReleaseSlotAPI(Resource):
             "cost": booking.cost
         }
 
+class UserStatsAPI(Resource):
+    @auth_required('token')
+    def get(self, user_id):
+        if current_user.roles[0]=="admin":
+            pass
+        bookings = ReserveParkingSlot.query.filter_by(u_id=user_id).all()
+
+        monthly_cost = defaultdict(int)
+        lot_usage = defaultdict(int)
+
+        for booking in bookings:
+            if booking.parking_timestamp:
+                month = booking.parking_timestamp.strftime('%Y-%m')
+                monthly_cost[month] += booking.cost or 0
+
+            slot = ParkingSlot.query.get(booking.s_id)
+            lot = ParkingLot.query.get(slot.lot_id) if slot else None
+            if lot:
+                lot_usage[lot.location_name] += 1
+
+        result = {
+            "raw_bookings": [
+                {
+                    "id": b.id,
+                    "cost": b.cost,
+                    "vehicle_no": b.vehicle_no,
+                    "parking_timestamp": b.parking_timestamp.isoformat(),
+                    "leaving_timestamp": b.leaving_timestamp.isoformat() if b.leaving_timestamp else None
+                } for b in bookings
+            ],
+            "monthly_cost": monthly_cost,
+            "lot_usage": lot_usage
+        }
+
+        return result
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
@@ -364,4 +400,5 @@ api.add_resource(UserListAPI, '/users')
 api.add_resource(BookSlotAPI, '/lots/<int:lot_id>/book')
 api.add_resource(BookingList, '/user-dashboard/<int:user_id>')
 api.add_resource(ReleaseSlotAPI, '/release-slot/<int:booking_id>')
+api.add_resource(UserStatsAPI, '/user-stats/<int:user_id>')
 

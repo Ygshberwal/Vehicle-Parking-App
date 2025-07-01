@@ -10,6 +10,7 @@ import UpdateParkingLot from "../pages/UpdateParkingLot.js";
 import store from "./store.js";
 import AllUsersPage from "../pages/AllUsersPage.js"
 import UserDisplayPage from "../pages/UserDisplayPage.js";
+import UserStatsPage from "../pages/UserStatsPage.js";
 
 const routes = [
     {path : '/',component: HomePage},
@@ -23,6 +24,7 @@ const routes = [
     {path:'/user-dashboard/:id', component : UserDashboardPage, props : true},
     {path:'/add-lot', component : AddParkingLot},
     {path:'/lots/:id/update-lot', component : UpdateParkingLot},
+    {path:'/user-stats/:id', component : UserStatsPage,  meta :{requiresLogin : true, role : "user"}},
 ]
 
 const router =  new VueRouter({
