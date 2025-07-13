@@ -8,37 +8,31 @@ export default {
         <hr class="w-25 mx-auto">
     </div><br>
 
-    <!-- Revenue Per Month -->
     <div v-if="Object.keys(stats.revenue_by_month || {}).length" class="mb-5">
         <canvas id="revenueChart" height="120"></canvas>
         <h4 class="text-center">Monthly Revenue</h4>
     </div><br>
 
-    <!-- Bookings Per Month -->
     <div v-if="Object.keys(stats.booking_count_by_month || {}).length" class="mb-5">
         <canvas id="bookingChart" height="120"></canvas>
         <h4 class="text-center">Bookings Per Month</h4>
     </div><br>
 
-    <!-- Revenue Per Lot -->
     <div v-if="Object.keys(stats.revenue_per_lot || {}).length" class="mb-5">
         <canvas id="lotRevenueChart" height="120"></canvas>
         <h4 class="text-center">Revenue Per Parking Lot</h4>
     </div><br>
 
-    <!-- Most Used Parking Lots -->
     <div v-if="Object.keys(stats.lot_usage || {}).length" class="mb-5">
         <canvas id="lotUsageChart" height="120"></canvas>
         <h4 class="text-center">Most Used Parking Lots</h4>
     </div><br>
 
-    <!-- Most Active Users -->
     <div v-if="Object.keys(stats.user_usage || {}).length" class="mb-5">
         <canvas id="userChart" height="120"></canvas>
         <h4 class="text-center">Most Active Users</h4>
     </div><br>
 
-    <!-- Current Occupancy -->
     <div v-if="Object.keys(stats.lot_occupancy || {}).length" class="mb-5">
         <canvas id="occupancyChart" height="120"></canvas>
         <h4 class="text-center">Current Lot Occupancy</h4>
