@@ -18,9 +18,31 @@ export default {
                         ➕ Add Parking Lot
                     </router-link>
                 </div>
+                
             </div>
+
+            <div class="d-flex justify-content-end mb-4">
+                <input 
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="🔍 Search lots..."
+                    class="form-control"
+                    style="
+                        max-width: 300px;
+                        border-radius: 2rem;
+                        padding: 0 1.2rem;
+                        font-size: 0.95rem;
+                        border: 1px solid #ccc;
+                        box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+                        transition: all 0.2s ease;
+                    "
+                    @focus="(e) => e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.2)'"
+                    @blur="(e) => e.target.style.boxShadow = '0 1px 6px rgba(0,0,0,0.05)'"
+                />
+            </div>
+
             <div class="row g-4 mt-3">
-                <div class="col-md-6 col-lg-4" v-for="lot in lots" :key="lot.id">
+                <div class="col-md-6 col-lg-4" v-for="lot in filteredLots" :key="lot.id">
                 <SmallLotCard 
                     :lot_id="lot.id" 
                     :location_name="lot.location_name" 
@@ -30,6 +52,9 @@ export default {
                     :available_slot="lot.available_slot"
                 />
                 </div>
+                <div v-if="filteredLots.length === 0" class="text-center text-muted mt-4">
+                    No parking lots found matching your search.
+                </div>
             </div>
         </div>
     `,
@@ -38,12 +63,21 @@ export default {
     // data is a function that return an object
     data(){            
         return {
-            lots : []
+            lots : [],
+            searchQuery : ""
         }
     },
 
-    methods : {
-
+    computed : {
+        filteredLots(){
+            const query = this.searchQuery.trim().toLowerCase();
+            if (!query) return this.lots;
+            return this.lots.filter(lot =>
+                lot.location_name.toLowerCase().includes(query) ||
+                lot.address.toLowerCase().includes(query) ||
+                lot.pincode.toString().includes(query)
+            );
+        }
     },
     // fetch data from /api/lots
     async mounted(){        // run automatically when page is imported
