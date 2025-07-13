@@ -4,23 +4,24 @@ export default {
     template: `
     <div class="container my-5">
         <div class="text-center mb-4">
-            <h1 class="fw-bold">User Parking Statistics</h1>
             <hr class="w-25 mx-auto">
-        </div>
+            <h1 class="fw-bold">Your Parking Statistics</h1>
+            <hr class="w-25 mx-auto">
+        </div><br>
 
         <div v-if="Object.keys(monthlyCost).length" class="mb-5">
-            <h4 class="text-center">Monthly Spending</h4>
             <canvas id="monthlyCostChart" height="120" v-if="Object.keys(monthlyCost).length"></canvas>
-        </div>
-
+            <h4 class="text-center">Monthly Spending</h4>
+        </div><br>
+        
         <div v-if="Object.keys(lotUsage).length" class="mb-5">
-            <h4 class="text-center">Most Used Parking Lots</h4>
             <canvas id="lotUsageChart" height="120" v-if="Object.keys(lotUsage).length"></canvas>
-        </div>
+            <h4 class="text-center">Most Used Parking Lots</h4>
+        </div><br>
 
         <div v-if="Object.keys(monthlyVisitCount).length" class="mb-5">
-            <h4 class="text-center">Visits Per Month</h4>
             <canvas id="visitChart" height="120" v-if="Object.keys(monthlyVisitCount).length"></canvas>
+            <h4 class="text-center">Visits Per Month</h4>
         </div>
 
         <div v-if="noData" class="text-center mt-5">

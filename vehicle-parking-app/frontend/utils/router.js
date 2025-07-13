@@ -11,6 +11,7 @@ import store from "./store.js";
 import AllUsersPage from "../pages/AllUsersPage.js"
 import UserDisplayPage from "../pages/UserDisplayPage.js";
 import UserStatsPage from "../pages/UserStatsPage.js";
+import AllStatsPage from "../pages/AllStatsPage.js"
 
 const routes = [
     {path : '/',component: HomePage},
@@ -25,6 +26,7 @@ const routes = [
     {path:'/add-lot', component : AddParkingLot},
     {path:'/lots/:id/update-lot', component : UpdateParkingLot},
     {path:'/user-stats/:id', component : UserStatsPage,  meta :{requiresLogin : true, role : "user"}},
+    {path:'/all-stats', component : AllStatsPage, meta :{requiresLogin : true, role : "admin"}}
 ]
 
 const router =  new VueRouter({

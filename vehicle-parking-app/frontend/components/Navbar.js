@@ -8,11 +8,10 @@ export default {
 
         <!-- Centered Links -->
         <ul class="navbar-nav mx-auto mb-2 mb-lg-0 d-flex flex-row gap-3">
-          <li class="nav-item">
-            <router-link class="nav-link" to="/">Home</router-link>
-          </li>
-
           <template v-if="!$store.state.loggedIn">
+            <li class="nav-item">
+              <router-link class="nav-link" to="/">Home</router-link>
+            </li>
             <li class="nav-item">
               <router-link class="nav-link" to="/login">Login</router-link>
             </li>
@@ -42,8 +41,12 @@ export default {
               <router-link class="nav-link" :to="'/user-dashboard/' + $store.state.user_id">Bookings</router-link>
             </li>
 
+            <li class="nav-item" v-if="$store.state.role === 'admin'">
+              <router-link class="nav-link" :to="'/all-stats'">Summary</router-link>
+            </li>
+            
             <li class="nav-item" v-if="$store.state.role === 'user'">
-              <router-link class="nav-link" :to="'/user-stats/' + $store.state.user_id">Statistics</router-link>
+              <router-link class="nav-link" :to="'/user-stats/' + $store.state.user_id">Summary</router-link>
             </li>
           </template>
         </ul>
