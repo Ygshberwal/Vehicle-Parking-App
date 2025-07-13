@@ -392,6 +392,55 @@ class UserStatsAPI(Resource):
         }
 
         return result
+    
+class AllStatsAPI(Resource):
+    @auth_required('token')
+    def get(self):
+        if current_user.roles[0] != 'admin':
+            return {"error": "Access denied"}, 403
+
+        bookings = ReserveParkingSlot.query.all()
+        lots = ParkingLot.query.all()
+        users = User.query.all()
+
+        revenue_by_month = defaultdict(int)
+        booking_count_by_month = defaultdict(int)
+        revenue_per_lot = defaultdict(int)
+        lot_usage = defaultdict(int)
+        user_usage = defaultdict(int)
+
+        for b in bookings:
+            if not b.parking_timestamp:
+                continue
+            month = b.parking_timestamp.strftime('%Y-%m')
+            revenue_by_month[month] += b.cost or 0
+            booking_count_by_month[month] += 1
+
+            slot = ParkingSlot.query.get(b.s_id)
+            lot = ParkingLot.query.get(slot.lot_id) if slot else None
+            if lot:
+                revenue_per_lot[lot.location_name] += b.cost or 0
+                lot_usage[lot.location_name] += 1
+
+            user = User.query.get(b.u_id)
+            if user:
+                user_usage[user.name] += 1
+
+        lot_occupancy = {
+            lot.location_name: {
+                "available": lot.available_slot,
+                "occupied": lot.occupied_slot
+            } for lot in lots
+        }
+
+        return {
+            "revenue_by_month": revenue_by_month,
+            "booking_count_by_month": booking_count_by_month,
+            "revenue_per_lot": revenue_per_lot,
+            "lot_usage": lot_usage,
+            "user_usage": user_usage,
+            "lot_occupancy": lot_occupancy
+        }
 
 api.add_resource(LotAPI, '/lots/<int:lot_id>')
 api.add_resource(LotListAPI, '/lots')
@@ -401,4 +450,5 @@ api.add_resource(BookSlotAPI, '/lots/<int:lot_id>/book')
 api.add_resource(BookingList, '/user-dashboard/<int:user_id>')
 api.add_resource(ReleaseSlotAPI, '/release-slot/<int:booking_id>')
 api.add_resource(UserStatsAPI, '/user-stats/<int:user_id>')
+api.add_resource(AllStatsAPI, '/all-stats')
 
