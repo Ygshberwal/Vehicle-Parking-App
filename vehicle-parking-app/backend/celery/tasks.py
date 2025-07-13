@@ -1,7 +1,8 @@
+from datetime import datetime, timedelta
 from celery import shared_task
 import time
 import flask_excel 
-from backend.models.models import ParkingLot, ReserveParkingSlot, User
+from backend.models.models import ParkingLot, ParkingSlot, ReserveParkingSlot, Role, User
 from backend.celery.mail_service import send_email
 
 @shared_task(ignore_result = False)
@@ -48,5 +49,116 @@ def bookings_csv():
     return file_name
 
 @shared_task(ignore_result = True)
-def email_reminder(to, subject, content):                  #just call the send_email function mail_service.py
-    send_email(to, subject, content)
+def email_reminder(to, subject, content, attachment_path=None, attachment_name=None):                 #just call the send_email function mail_service.py
+    send_email(to, subject, content, attachment_path, attachment_name)
+
+
+@shared_task
+def send_daily_reminder_to_users():
+    from backend.models.models import User
+
+    users = User.query.all()
+
+    for user in users:
+        email_reminder.delay(
+            user.email,
+            'Daily Parking Reminder',
+            f"<p>Hi {user.name},<br>Don't forget to book your parking spot for today </p>"
+        )
+
+
+@shared_task
+def send_new_lot_alert_to_users():
+    from backend.models.models import User, ParkingLot
+    from datetime import datetime, timedelta
+
+    # Find lots created in the last 24 hours
+    since = datetime.now() - timedelta(hours=24)
+    new_lots = ParkingLot.query.filter(ParkingLot.created_at >= since).all()
+
+    if not new_lots:
+        print("No new lots in last 24 hours.")
+        return
+
+    users = User.query.all()
+    for user in users:
+        email_reminder.delay(
+            user.email,
+            'New Parking Lot Alert',
+            f"""
+            <p>Hi {user.name},</p>
+            <p>New parking lots have been added in the last 24 hours. Here are some of them:</p>
+            <ul>
+                {''.join(f"<li>{lot.location_name} - {lot.address}</li>" for lot in new_lots[:5])}
+            </ul>
+            <p>Visit your dashboard to explore and book now!</p>
+            """
+        )
+
+
+@shared_task
+def remind_inactive_users():
+    print("Sending test reminder to yogesh@example")
+    email_reminder.delay(
+        'yogesh@example',
+        'Test Parking Reminder',
+        '<h3>Hello Yogesh, this is your test reminder!</h3>'
+    )
+
+@shared_task
+def send_monthly_reports_to_all_users():
+    from backend.models.models import User, ReserveParkingSlot, ParkingSlot, ParkingLot
+    from backend.celery.mail_service import send_email
+    from datetime import datetime, timedelta
+
+    today = datetime.now()
+    start_date = today - timedelta(days=30)
+
+    users = User.query.all()
+
+    for user in users:
+        bookings = ReserveParkingSlot.query \
+            .filter(ReserveParkingSlot.u_id == user.id) \
+            .filter(ReserveParkingSlot.parking_timestamp >= start_date) \
+            .all()
+
+        if not bookings:
+            print(f"Skipping {user.email} — No bookings in last 30 days.")
+            continue
+
+        lot_counter = {}
+        total_cost = 0
+
+        for b in bookings:
+            slot = ParkingSlot.query.get(b.s_id)
+            if not slot:
+                continue
+            lot = ParkingLot.query.get(slot.lot_id)
+            if not lot:
+                continue
+            lot_name = lot.location_name
+            lot_counter[lot_name] = lot_counter.get(lot_name, 0) + 1
+            total_cost += b.cost or 0
+
+        most_used_lot = max(lot_counter, key=lot_counter.get)
+
+        # Create HTML report
+        html_report = f"""
+            <div style="font-family: Arial, sans-serif; padding: 10px;">
+                <h2 style="color: #333;">📊 Monthly Parking Report for {user.name}</h2>
+                <table style="border-collapse: collapse; width: 100%;">
+                    <tr><td><strong>Total Bookings:</strong></td><td>{len(bookings)}</td></tr>
+                    <tr><td><strong>Most Used Lot:</strong></td><td>{most_used_lot}</td></tr>
+                    <tr><td><strong>Total Spent:</strong></td><td>₹{total_cost}</td></tr>
+                </table>
+                <p style="margin-top: 20px;">Thank you for using our parking service!</p>
+            </div>
+        """
+
+        # Send HTML report
+        send_email(
+            to=user.email,
+            subject='Your Monthly Parking Report',
+            content=html_report
+        )
+        print(f"Sent report to {user.email}")

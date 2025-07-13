@@ -2,3 +2,7 @@ id,name,email,password,dp,pincode,fs_uniquifier,active
 1,admin,admin@parking.com,$2b$12$T3qEpNAvQEe05KW4FAGbFOY7DOAYjim1mreEox3wSRi22xc8V3FKG,,,1c42fb2d-179b-4b3b-8e53-06e16cf20a78,True
 2,user01,user01@parking.com,$2b$12$D7F08O/rCPw6U7//8gReHOdWFpioSYmHhkxwx3tiUjU7QrBhry4ke,,,0b8f2afd-15f2-4207-84e9-73b4f4578333,True
 3,Test,testing@parking.com,$2b$12$n42E0LOJlyktDSAziJJuBOL9pAvNBJnK8rnt46tOS5IKsXukVwpDy,,,4104d6a9-adfe-4c67-a6cd-281dba658005,False
+4,Sahil,b22233@students.iitmandi.ac.in,$2b$12$X8jsL5T6OUaM8J6z3MBlpeMCZo0uTYFmX77xuYcq6190jpVts9Nku,,,3b4a50d2-68c1-4997-92c8-e8eb14770dc2,True
+5,Dipanshu,dipanshu@gmail.com,$2b$12$yhg0wDuIp56eHEV1tcoG9OQCqxRomEvk4D11vf/3ixysqXDu67RUe,,175005,7c1b8dec-4b29-4694-bd0e-46829555f91b,True
+6,Chirangee,chirag1244@gmail.com,$2b$12$zBBpz9E2P/ehhQJ2DZyddOioqLntkqXqx3FGKik3rQyBMz.XwhZHS,,122001,3660c24a-53e2-4f20-9817-5dc7e7b37ba0,True
+7,test_name,test_email@gmail.com,$2b$12$Jce9c3.a6FIj/y.dm/JrKOG1O1qICoV.JyB.HUAh1L2RBzTgGG16q,,,e5619f15-3634-40fa-96da-c05ed57dd698,True

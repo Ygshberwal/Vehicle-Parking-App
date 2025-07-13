@@ -1,18 +1,39 @@
-# adding the schedule here
 from celery.schedules import crontab
 from flask import current_app as app
-from backend.celery.tasks import email_reminder
+from backend.celery.tasks import email_reminder, send_daily_reminder_to_users, send_monthly_reports_to_all_users, send_new_lot_alert_to_users
+
 celery_app = app.extensions['celery']
 
-@celery_app.on_after_configure.connect              #it is basically a life cycle hook, after configuration and connection this function will auto run 
+@celery_app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    # sending email every 10 second
-    # sender.add_periodic_task(10.0, email_reminder.s('yogesh@example', 'Test Email', '<h1> Hello there celery schedule</h1>'))      
+    # Daily email reminder (for testing or inactive user reminders)
+    sender.add_periodic_task(
+        crontab(hour=19, minute=56),
+        email_reminder.s(
+            'yogesh@example',
+            'Test Daily Reminder',
+            '<h1>This is your daily parking reminder</h1>'
+        ),
+        name='daily test reminder'
+    )
     
-    # sending email at a specific time, every day
-    sender.add_periodic_task(crontab(hour=17, minute=3), email_reminder.s('yogesh@example', 'Time Specific', '<h1> Hello, there is your daily scheduled mail</h1>'), name='daily reminder')      
-    
-    # sending email at a specific time, on every monday
-    sender.add_periodic_task(crontab(hour=17, minute=5, day_of_week='tuesday'), email_reminder.s('yogesh@example', 'Time Specific', '<h1> Hello, there is your weekly scheduled mail</h1>'), name='weekly reminder')      
+    # Daily reminder to all users 
+    sender.add_periodic_task(
+        crontab(hour=20, minute=14),
+        send_daily_reminder_to_users.s(),
+        name='daily user reminder'
+    )
 
+    # Daily alert if new parking lot added in last 24 hours
+    sender.add_periodic_task(
+        crontab(hour=20, minute=21),
+        send_new_lot_alert_to_users.s(),
+        name='new lot alert'
+    )
 
+    # Monthly report of user
+    sender.add_periodic_task(
+        crontab(hour=20, minute=27, day_of_month='13'),
+        send_monthly_reports_to_all_users.s(),
+        name='monthly reports to all users'
+    )

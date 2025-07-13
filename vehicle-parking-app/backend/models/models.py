@@ -41,6 +41,7 @@ class ParkingLot(db.Model):
     # max_slot = db.Column(db.Integer, nullable =  False)
     available_slot = db.Column(db.Integer, default=0)
     occupied_slot = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
 class ParkingSlot(db.Model):
     id = db.Column(db.Integer, primary_key = True)
