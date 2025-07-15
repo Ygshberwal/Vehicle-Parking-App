@@ -1,5 +1,3 @@
-# mail_service.py
-
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -14,10 +12,9 @@ def send_email(to, subject, content, attachment_path=None, attachment_name=None)
     msg['Subject'] = subject
     msg['From'] = SENDER_EMAIL
 
-    # Attach HTML content
-    msg.attach(MIMEText(content, 'html'))
+    msg.attach(MIMEText(content, 'html'))         #'html' for html content
 
-    # Send via local SMTP (MailHog)
     with smtplib.SMTP(host=SMTP_SERVER, port=SMTP_PORT) as client:
         client.send_message(msg)
         client.quit()
+

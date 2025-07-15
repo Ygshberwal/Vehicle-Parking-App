@@ -69,15 +69,11 @@ def send_daily_reminder_to_users():
 
 @shared_task
 def send_new_lot_alert_to_users():
-    from backend.models.models import User, ParkingLot
-    from datetime import datetime, timedelta
-
-    # Find lots created in the last 24 hours
     since = datetime.now() - timedelta(hours=24)
     new_lots = ParkingLot.query.filter(ParkingLot.created_at >= since).all()
 
     if not new_lots:
-        print("No new lots in last 24 hours.")
+        print("No new lots added in last 24 hours.")
         return
 
     users = User.query.all()
@@ -86,10 +82,10 @@ def send_new_lot_alert_to_users():
             user.email,
             'New Parking Lot Alert',
             f"""
-            <p>Hi {user.name},</p>
-            <p>New parking lots have been added in the last 24 hours. Here are some of them:</p>
+            <h2>Hi {user.name},</h2>
+            <h4>New parking lots have been added in the last 24 hours. Here are some of them:</h4>
             <ul>
-                {''.join(f"<li>{lot.location_name} - {lot.address}</li>" for lot in new_lots[:5])}
+                {''.join(f"<li>{lot.location_name} - {lot.address}</li>" for lot in new_lots)}
             </ul>
             <p>Visit your dashboard to explore and book now!</p>
             """
@@ -102,25 +98,18 @@ def remind_inactive_users():
     email_reminder.delay(
         'yogesh@example',
         'Test Parking Reminder',
-        '<h3>Hello Yogesh, this is your test reminder!</h3>'
+        '<h3>Hello , this is your test reminder!</h3>'
     )
 
 @shared_task
 def send_monthly_reports_to_all_users():
-    from backend.models.models import User, ReserveParkingSlot, ParkingSlot, ParkingLot
-    from backend.celery.mail_service import send_email
-    from datetime import datetime, timedelta
-
     today = datetime.now()
     start_date = today - timedelta(days=30)
 
     users = User.query.all()
 
     for user in users:
-        bookings = ReserveParkingSlot.query \
-            .filter(ReserveParkingSlot.u_id == user.id) \
-            .filter(ReserveParkingSlot.parking_timestamp >= start_date) \
-            .all()
+        bookings = ReserveParkingSlot.query.filter(ReserveParkingSlot.u_id == user.id).filter(ReserveParkingSlot.parking_timestamp >= start_date).all()
 
         if not bookings:
             print(f"Skipping {user.email} — No bookings in last 30 days.")
@@ -142,21 +131,20 @@ def send_monthly_reports_to_all_users():
 
         most_used_lot = max(lot_counter, key=lot_counter.get)
 
-        # Create HTML report
         html_report = f"""
             <div style="font-family: Arial, sans-serif; padding: 10px;">
-                <h2 style="color: #333;">📊 Monthly Parking Report for {user.name}</h2>
+                <h2 style="color: #333;">Monthly Parking Report for {user.name}</h2>
                 <table style="border-collapse: collapse; width: 100%;">
-                    <tr><td><strong>Total Bookings:</strong></td><td>{len(bookings)}</td></tr>
-                    <tr><td><strong>Most Used Lot:</strong></td><td>{most_used_lot}</td></tr>
-                    <tr><td><strong>Total Spent:</strong></td><td>₹{total_cost}</td></tr>
+                    <tr><td><strong>Total Bookings:</strong></td> <td>{len(bookings)}</td></tr>
+                    <tr><td><strong>Most Used Lot:</strong></td> <td>{most_used_lot}</td></tr>
+                    <tr><td><strong>Total Spent:</strong></td> <td>₹{total_cost}</td></tr>
                 </table>
                 <p style="margin-top: 20px;">Thank you for using our parking service!</p>
             </div>
         """
 
-        # Send HTML report
-        send_email(
+        #send html_report
+        email_reminder.delay(
             to=user.email,
             subject='Your Monthly Parking Report',
             content=html_report

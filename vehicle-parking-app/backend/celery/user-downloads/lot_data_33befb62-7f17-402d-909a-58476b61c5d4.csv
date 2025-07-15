@@ -1,0 +1,5 @@
+id,location_name,price,address,pincode,available_slot,occupied_slot,created_at
+1,CP,50,"Rajeev Chowk, New Delhi",110001,15,5,2025-07-13T14:41:01.180319
+2,IIT Catalyst,20,"North Campus, IIT Mandi",175005,12,3,2025-07-13T14:41:01.180424
+3,CV Raman,40,"IIT Mandi, HP",175005,28,2,2025-07-13T14:41:01.180428
+4,Griffon Canteen,15,"South Campus, IIT Mandi",175005,18,2,2025-07-13T14:41:01.180430
