@@ -6,3 +6,4 @@ id,name,email,password,dp,pincode,fs_uniquifier,active
 5,Dipanshu,dipanshu@gmail.com,$2b$12$yhg0wDuIp56eHEV1tcoG9OQCqxRomEvk4D11vf/3ixysqXDu67RUe,,175005,7c1b8dec-4b29-4694-bd0e-46829555f91b,True
 6,Chirangee,chirag1244@gmail.com,$2b$12$zBBpz9E2P/ehhQJ2DZyddOioqLntkqXqx3FGKik3rQyBMz.XwhZHS,,122001,3660c24a-53e2-4f20-9817-5dc7e7b37ba0,True
 7,test_name,test_email@gmail.com,$2b$12$Jce9c3.a6FIj/y.dm/JrKOG1O1qICoV.JyB.HUAh1L2RBzTgGG16q,,,e5619f15-3634-40fa-96da-c05ed57dd698,True
+8,dummy,dummy@email.com,$2b$12$DC0PB7uBjOQS3iHlquww3uoNWiFteHOQXbIOc779838M1ZTvJNfra,,,9c375ef3-fc7d-4c06-a18b-a6ff16384b6a,True

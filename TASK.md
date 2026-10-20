@@ -22,8 +22,8 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
   - [x] Login (admin)
   - [x] Create/View/Edit/Delete Parking Lot (admin)
   - [x] View Parking Spot Status
-  - [ ] Reserve Spot (user)
-  - [ ] Release Spot (user)
+  - [x] Reserve Spot (user)
+  - [x] Release Spot (user)
 
 ---
 
@@ -36,17 +36,22 @@ A roadmap to build the MAD II project in 4 weeks. Check off tasks as you complet
   - [x] Create/Edit/Delete Parking Lots
   - [x] View Parking Spots
   - [x] View Users
-- [ ] Create User dashboard components:
-  - [ ] Book Spot (auto-assigned)
-  - [ ] Release Spot
+- [X] Create User dashboard components:
+  - [X] Book Spot (auto-assigned)
+  - [X] Release Spot
   - [ ] View Booking History
-- [ ] Connect frontend with backend APIs via Axios
+- [x] Connect frontend with backend APIs via Routes
+- [ ] Vehicle details to be added (User and admin funcitonality)
+- [ ] Frontend Validations
+- [ ] Dashboard stylling 
+- [ ] Summary section for both user and admin
+- [ ] Search Functionality
 
 ---
 
 ## 📅 Week 3: Async Jobs, Caching, Charts
 
-- [ ] Set up Redis and Celery
+- [x] Set up Redis and Celery
 - [ ] Implement Celery scheduled tasks:
   - [ ] Daily user reminder (email/chat webhook)
   - [ ] Monthly activity report (HTML or PDF + email)
