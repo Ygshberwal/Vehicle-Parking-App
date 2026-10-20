@@ -235,6 +235,14 @@ Start MailHog before running email jobs. The code expects SMTP on port 1025; the
 
 Check your internet connection and browser console. The frontend loads libraries from external CDNs, so blocked CDN requests can prevent the app from rendering.
 
+## Demo data / reset for experiments
+
+See [DEMO_DATA.md](DEMO_DATA.md) for saved demo credentials, parking lots, booking scenarios, and reset instructions.
+
+From `vehicle-parking-app/` with `.venv` activated, use `python seed_demo.py --reset --profile large` for 60 lots, 300 users, and 12,180 bookings. Use `--profile small` instead for the original focused demo (5 lots, 6 users, 65 bookings); omitting the profile also selects small.
+
+**Stop Flask, the Celery worker, and Beat first. This deletes existing local application data and generated exports.** Do not run it if you want to keep your current users and bookings.
+
 ## Project structure
 
 ```text

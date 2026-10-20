@@ -1,0 +1,61 @@
+id,location_name,price,address,pincode,available_slot,occupied_slot,created_at
+1,Connaught Place Central,60,"Block A, Connaught Place, New Delhi",110001,9,3,2025-09-15T23:40:47
+2,Saket Metro Parking,40,"Gate 2, Saket Metro Station, New Delhi",110017,5,3,2025-09-14T23:40:47
+3,Rohini Market Parking,30,"Sector 7 Market, Rohini, New Delhi",110085,6,0,2025-09-13T23:40:47
+4,Nehru Place Plaza,50,"Nehru Place Commercial Complex, New Delhi",110019,4,0,2025-09-12T23:40:47
+5,Dwarka Express Parking,25,"Sector 10 Metro Station, Dwarka, New Delhi",110075,0,3,2025-09-11T23:40:47
+6,Karol Bagh Metro Parking,70,"Block F, Karol Bagh, New Delhi",110006,0,45,2025-09-10T23:40:47
+7,Lajpat Nagar Metro Parking,80,"Block G, Lajpat Nagar, New Delhi",110007,47,3,2025-09-09T23:40:47
+8,Janakpuri Metro Parking,90,"Block H, Janakpuri, New Delhi",110008,52,3,2025-09-08T23:40:47
+9,Pitampura Metro Parking,100,"Block I, Pitampura, New Delhi",110009,57,3,2025-09-07T23:40:47
+10,Vasant Kunj Metro Parking,110,"Block J, Vasant Kunj, New Delhi",110010,17,3,2025-09-06T23:40:47
+11,Mayur Vihar Metro Parking,120,"Block K, Mayur Vihar, New Delhi",110011,22,3,2025-09-05T23:40:47
+12,Hauz Khas Metro Parking,130,"Block L, Hauz Khas, New Delhi",110012,27,3,2025-09-04T23:40:47
+13,Rajouri Garden Metro Parking,20,"Block A, Rajouri Garden, New Delhi",110013,32,3,2025-09-03T23:40:47
+14,Green Park Metro Parking,30,"Block B, Green Park, New Delhi",110014,37,3,2025-09-02T23:40:47
+15,Chandni Chowk Metro Parking,40,"Block C, Chandni Chowk, New Delhi",110015,42,3,2025-09-01T23:40:47
+16,Greater Kailash Metro Parking,50,"Block D, Greater Kailash, New Delhi",110016,47,3,2025-08-31T23:40:47
+17,Karol Bagh Market Parking,60,"Block E, Karol Bagh, New Delhi",110017,52,3,2025-08-30T23:40:47
+18,Lajpat Nagar Market Parking,70,"Block F, Lajpat Nagar, New Delhi",110018,57,3,2025-08-29T23:40:47
+19,Janakpuri Market Parking,80,"Block G, Janakpuri, New Delhi",110019,17,3,2025-08-28T23:40:47
+20,Pitampura Market Parking,90,"Block H, Pitampura, New Delhi",110020,22,3,2025-08-27T23:40:47
+21,Vasant Kunj Market Parking,100,"Block I, Vasant Kunj, New Delhi",110021,27,3,2025-08-26T23:40:47
+22,Mayur Vihar Market Parking,110,"Block J, Mayur Vihar, New Delhi",110022,32,3,2025-08-25T23:40:47
+23,Hauz Khas Market Parking,120,"Block K, Hauz Khas, New Delhi",110023,37,3,2025-08-24T23:40:47
+24,Rajouri Garden Market Parking,130,"Block L, Rajouri Garden, New Delhi",110024,42,3,2025-08-23T23:40:47
+25,Green Park Market Parking,20,"Block A, Green Park, New Delhi",110025,47,3,2025-08-22T23:40:47
+26,Chandni Chowk Market Parking,30,"Block B, Chandni Chowk, New Delhi",110026,52,3,2025-08-21T23:40:47
+27,Greater Kailash Market Parking,40,"Block C, Greater Kailash, New Delhi",110027,58,2,2025-08-20T23:40:47
+28,Karol Bagh Mall Parking,50,"Block D, Karol Bagh, New Delhi",110028,18,2,2025-08-19T23:40:47
+29,Lajpat Nagar Mall Parking,60,"Block E, Lajpat Nagar, New Delhi",110029,23,2,2025-08-18T23:40:47
+30,Janakpuri Mall Parking,70,"Block F, Janakpuri, New Delhi",110030,28,2,2025-08-17T23:40:47
+31,Pitampura Mall Parking,80,"Block G, Pitampura, New Delhi",110031,33,2,2025-08-16T23:40:47
+32,Vasant Kunj Mall Parking,90,"Block H, Vasant Kunj, New Delhi",110032,38,2,2025-08-15T23:40:47
+33,Mayur Vihar Mall Parking,100,"Block I, Mayur Vihar, New Delhi",110033,43,2,2025-08-14T23:40:47
+34,Hauz Khas Mall Parking,110,"Block J, Hauz Khas, New Delhi",110034,48,2,2025-08-13T23:40:47
+35,Rajouri Garden Mall Parking,120,"Block K, Rajouri Garden, New Delhi",110035,53,2,2025-08-12T23:40:47
+36,Green Park Mall Parking,130,"Block L, Green Park, New Delhi",110036,58,2,2025-08-11T23:40:47
+37,Chandni Chowk Mall Parking,20,"Block A, Chandni Chowk, New Delhi",110037,18,2,2025-08-10T23:40:47
+38,Greater Kailash Mall Parking,30,"Block B, Greater Kailash, New Delhi",110038,23,2,2025-08-09T23:40:47
+39,Karol Bagh Office Parking,40,"Block C, Karol Bagh, New Delhi",110039,28,2,2025-08-08T23:40:47
+40,Lajpat Nagar Office Parking,50,"Block D, Lajpat Nagar, New Delhi",110040,33,2,2025-08-07T23:40:47
+41,Janakpuri Office Parking,60,"Block E, Janakpuri, New Delhi",110041,38,2,2025-08-06T23:40:47
+42,Pitampura Office Parking,70,"Block F, Pitampura, New Delhi",110042,43,2,2025-08-05T23:40:47
+43,Vasant Kunj Office Parking,80,"Block G, Vasant Kunj, New Delhi",110043,48,2,2025-08-04T23:40:47
+44,Mayur Vihar Office Parking,90,"Block H, Mayur Vihar, New Delhi",110044,53,2,2025-08-03T23:40:47
+45,Hauz Khas Office Parking,100,"Block I, Hauz Khas, New Delhi",110045,58,2,2025-08-02T23:40:47
+46,Rajouri Garden Office Parking,110,"Block J, Rajouri Garden, New Delhi",110046,18,2,2025-08-01T23:40:47
+47,Green Park Office Parking,120,"Block K, Green Park, New Delhi",110047,23,2,2025-07-31T23:40:47
+48,Chandni Chowk Office Parking,130,"Block L, Chandni Chowk, New Delhi",110048,28,2,2025-07-30T23:40:47
+49,Greater Kailash Office Parking,20,"Block A, Greater Kailash, New Delhi",110049,33,2,2025-07-29T23:40:47
+50,Karol Bagh Community Parking,30,"Block B, Karol Bagh, New Delhi",110050,38,2,2025-07-28T23:40:47
+51,Lajpat Nagar Community Parking,40,"Block C, Lajpat Nagar, New Delhi",110051,43,2,2025-07-27T23:40:47
+52,Janakpuri Community Parking,50,"Block D, Janakpuri, New Delhi",110052,48,2,2025-07-26T23:40:47
+53,Pitampura Community Parking,60,"Block E, Pitampura, New Delhi",110053,53,2,2025-07-25T23:40:47
+54,Vasant Kunj Community Parking,70,"Block F, Vasant Kunj, New Delhi",110054,58,2,2025-07-24T23:40:47
+55,Mayur Vihar Community Parking,80,"Block G, Mayur Vihar, New Delhi",110055,18,2,2025-07-23T23:40:47
+56,Hauz Khas Community Parking,90,"Block H, Hauz Khas, New Delhi",110056,23,2,2025-07-22T23:40:47
+57,Rajouri Garden Community Parking,100,"Block I, Rajouri Garden, New Delhi",110057,28,2,2025-07-21T23:40:47
+58,Green Park Community Parking,110,"Block J, Green Park, New Delhi",110058,33,2,2025-07-20T23:40:47
+59,Chandni Chowk Community Parking,120,"Block K, Chandni Chowk, New Delhi",110059,38,2,2025-07-19T23:40:47
+60,Greater Kailash Community Parking,130,"Block L, Greater Kailash, New Delhi",110060,45,0,2025-07-18T23:40:47
