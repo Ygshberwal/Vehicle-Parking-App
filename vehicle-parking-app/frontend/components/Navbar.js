@@ -1,59 +1,24 @@
 export default {
-    template: `
-        <div>
-            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-                <div class="container-fluid d-flex justify-content-between align-items-center">
-                    <!-- Logo on Left -->
-                    <router-link class="navbar-brand" to="/">ParkingApp</router-link>
-
-                    <!-- Centered Links -->
-                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 d-flex flex-row gap-3">
-                        <template v-if="!$store.state.loggedIn">
-                            <li class="nav-item">
-                                <router-link class="nav-link" to="/" active-class="active">Home</router-link>
-                            </li>
-                            <li class="nav-item">
-                                <router-link class="nav-link" to="/login" active-class="active">Login</router-link>
-                            </li>
-                            <li class="nav-item">
-                                <router-link class="nav-link" to="/register" active-class="active">Register</router-link>
-                            </li>
-                        </template>
-
-                        <template v-if="$store.state.loggedIn">
-                            <li class="nav-item" v-if="$store.state.role === 'admin'">
-                                <router-link class="nav-link" to="/admin-dashboard" active-class="active">Admin Dashboard</router-link>
-                            </li>
-                            <li class="nav-item" v-if="$store.state.role === 'admin'">
-                                <router-link class="nav-link" to="/users" active-class="active">Users</router-link>
-                            </li>
-                            <li class="nav-item" v-if="$store.state.role === 'user'">
-                                <router-link class="nav-link" :to="'/user-dashboard/' + $store.state.user_id" active-class="active">User Dashboard</router-link>
-                            </li>
-                            <li class="nav-item">
-                                <router-link class="nav-link" to="/lots" active-class="active">Lots</router-link>
-                            </li>
-                            <li class="nav-item" v-if="$store.state.role === 'admin'">
-                                <router-link class="nav-link" :to="'/user-dashboard/' + $store.state.user_id" active-class="active">Bookings</router-link>
-                            </li>
-                            <li class="nav-item" v-if="$store.state.role === 'admin'">
-                                <router-link class="nav-link" to="/all-stats" active-class="active">Summary</router-link>
-                            </li>
-                            <li class="nav-item" v-if="$store.state.role === 'user'">
-                                <router-link class="nav-link" :to="'/user-stats/' + $store.state.user_id" active-class="active">Summary</router-link>
-                            </li>
-                        </template>
-                    </ul>
-
-                    <!-- Logout button on Right -->
-                    <div v-if="$store.state.loggedIn">
-                        <span class="text-white">
-                            <strong>{{ $store.state.name.toUpperCase() }}</strong>
-                        </span>
-                        <button class="btn btn-outline-light ms-3" @click="$store.commit('logout')">Logout</button>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    `
-}
+    data() { return {open: false}; },
+    computed: {
+        user() { return this.$store.state; },
+        initials() { return (this.user.name || '').split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase(); },
+        links() {
+            if (!this.user.loggedIn) return [{to: '/', text: 'Home'}, {to: '/login', text: 'Sign in'}];
+            if (this.user.role === 'admin') return [
+                {to: '/admin-dashboard', text: 'Overview', icon: 'grid'},
+                {to: '/lots', text: 'Parking lots', icon: 'pin'},
+                {to: '/user-dashboard/' + this.user.user_id, text: 'Bookings', icon: 'calendar'},
+                {to: '/users', text: 'Users', icon: 'users'},
+                {to: '/all-stats', text: 'Analytics', icon: 'chart'},
+            ];
+            return [
+                {to: '/lots', text: 'Find parking', icon: 'pin'},
+                {to: '/user-dashboard/' + this.user.user_id, text: 'My bookings', icon: 'calendar'},
+                {to: '/user-stats/' + this.user.user_id, text: 'My insights', icon: 'chart'},
+            ];
+        },
+    },
+    watch: {'$route'() { this.open = false; }},
+    template: `<header class="app-navigation"><nav class="nav-inner" aria-label="Main navigation"><router-link class="app-brand" to="/" aria-label="ParkingApp home"><span class="brand-symbol" aria-hidden="true">P<span></span></span><span>Parking<span class="brand-light">App</span></span></router-link><button class="nav-toggle icon-button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'" aria-controls="main-navigation" :aria-label="open ? 'Close navigation' : 'Open navigation'"><AppIcon :name="open ? 'close' : 'menu'" size="22" /></button><div id="main-navigation" class="nav-content" :class="{'is-open': open}"><div class="nav-links"><router-link v-for="link in links" :key="link.to" :to="link.to" :exact="link.to === '/'" class="nav-link-item" active-class="is-active"><AppIcon v-if="link.icon" :name="link.icon" size="17" />{{ link.text }}</router-link></div><div v-if="user.loggedIn" class="nav-account"><span class="user-avatar" aria-hidden="true">{{ initials }}</span><div class="nav-identity"><strong>{{ user.name }}</strong><span>{{ user.role === 'admin' ? 'Admin workspace' : 'Driver account' }}</span></div><button class="icon-button" @click="$store.commit('logout')" aria-label="Sign out" title="Sign out"><AppIcon name="logout" /></button></div><router-link v-else to="/register" class="btn btn-primary btn-sm">Create an account <AppIcon name="arrow" size="16" /></router-link></div></nav></header>`,
+};

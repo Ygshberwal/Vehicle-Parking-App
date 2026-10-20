@@ -1,4 +1,4 @@
-// vuex to share data between components
+import {feedback, closeDialog} from './feedback.js';
 
 const store =  new Vuex.Store({
     state :{
@@ -32,6 +32,8 @@ const store =  new Vuex.Store({
         },
 
         logout(state){
+            feedback.notices = [];
+            closeDialog(false);
             state.auth_token = null;
             state.role = null;
             state.name = null;
@@ -39,7 +41,6 @@ const store =  new Vuex.Store({
             state.user_id = null;
 
             localStorage.removeItem('user')
-            console.log("logged out successfully")
             window.location.hash = '#/login';
         }
     },

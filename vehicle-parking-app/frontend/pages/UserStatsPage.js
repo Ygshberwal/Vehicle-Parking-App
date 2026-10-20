@@ -1,166 +1,21 @@
+import ChartCard from '../components/ChartCard.js';
+import {api, money, number} from '../utils/api.js';
+import {monthlyEntries, topEntries} from '../utils/charts.js';
 
 export default {
-    props: ['id'],
-    template: `
-    <div class="container my-5">
-        <div class="text-center mb-4">
-            <hr class="w-25 mx-auto">
-            <h1 class="fw-bold">Your Parking Statistics</h1>
-            <hr class="w-25 mx-auto">
-        </div><br>
-
-        <div v-if="Object.keys(monthlyCost).length" class="mb-5">
-            <canvas id="monthlyCostChart" height="120" v-if="Object.keys(monthlyCost).length"></canvas>
-            <h4 class="text-center">Monthly Spending</h4>
-        </div><br>
-        
-        <div v-if="Object.keys(lotUsage).length" class="mb-5">
-            <canvas id="lotUsageChart" height="120" v-if="Object.keys(lotUsage).length"></canvas>
-            <h4 class="text-center">Most Used Parking Lots</h4>
-        </div><br>
-
-        <div v-if="Object.keys(monthlyVisitCount).length" class="mb-5">
-            <canvas id="visitChart" height="120" v-if="Object.keys(monthlyVisitCount).length"></canvas>
-            <h4 class="text-center">Visits Per Month</h4>
-        </div>
-
-        <div v-if="noData" class="text-center mt-5">
-            <p class="text-muted fs-5">No statistics available yet.</p>
-        </div>
-    </div>
-    `,
-    data() {
-        return {
-            monthlyCost: {},
-            lotUsage: {},
-            monthlyVisitCount: {},
-            noData: false
-        };
+    props: ['id'], components: {ChartCard},
+    data() { return {stats: {}, loading: true, error: ''}; },
+    computed: {
+        bookings() { return this.stats.raw_bookings || []; },
+        completed() { return this.bookings.filter(booking => booking.leaving_timestamp); },
+        charges() { return this.completed.reduce((sum, booking) => sum + (booking.cost || 0), 0); },
+        monthlyVisits() { const data = {}; this.bookings.forEach(booking => { const month = booking.parking_timestamp.slice(0, 7); data[month] = (data[month] || 0) + 1; }); return data; },
+        admin() { return this.$store.state.role === 'admin'; },
     },
-    mounted() {
-        fetch(`/api/user-stats/${this.$route.params.id}`, {
-            headers: {
-                'Authentication-Token': this.$store.state.auth_token
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (!data || Object.keys(data).length === 0) {
-                this.noData = true;
-                return;
-            }
-
-            this.monthlyCost = data.monthly_cost || {};
-            this.lotUsage = data.lot_usage || {};
-            this.monthlyVisitCount = this.calculateMonthlyVisits(data.raw_bookings || []);
-
-            this.$nextTick(() => {
-                if (Object.keys(this.monthlyCost).length) {
-                    this.renderMonthlyCostChart(this.monthlyCost);
-                }
-                if (Object.keys(this.lotUsage).length) {
-                    this.renderLotUsageChart(this.lotUsage);
-                }
-                if (Object.keys(this.monthlyVisitCount).length) {
-                    this.renderVisitChart(this.monthlyVisitCount);
-                }
-            });
-        })
-        .catch(err => {
-            console.error("Failed to fetch stats:", err);
-            this.noData = true;
-        });
-    },
-
+    mounted() { this.load(); },
     methods: {
-        calculateMonthlyVisits(bookings) {
-            const visits = {};
-            for (const b of bookings) {
-                if (b.parking_timestamp) {
-                    const month = b.parking_timestamp.slice(0, 7); // 'YYYY-MM'
-                    visits[month] = (visits[month] || 0) + 1;
-                }
-            }
-            return visits;
-        },
-        renderMonthlyCostChart(data) {
-            const ctx = document.getElementById('monthlyCostChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label: '₹ Spent',
-                        data: Object.values(data),
-                        backgroundColor: '#42A5F5',
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Monthly Spending (₹)' }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 50 }
-                        }
-                    }
-                }
-            });
-        },
-        renderLotUsageChart(data) {
-            const ctx = document.getElementById('lotUsageChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label: 'Visits',
-                        data: Object.values(data),
-                        backgroundColor: [
-                            '#FF6384', '#36A2EB', '#FFCE56',
-                            '#4CAF50', '#9C27B0', '#FF9800'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: { display: true, text: 'Most Used Lots' }
-                    }
-                }
-            });
-        },
-        renderVisitChart(data) {
-            const ctx = document.getElementById('visitChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label: 'Visits',
-                        data: Object.values(data),
-                        fill: false,
-                        borderColor: '#7E57C2',
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: { display: true, text: 'Visits Per Month' }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
-        }
-    }
+        money, number, monthlyEntries, topEntries,
+        async load() { this.loading = true; this.error = ''; try { this.stats = await api('/api/user-stats/' + this.id); } catch (error) { this.error = error.message; } finally { this.loading = false; } },
+    },
+    template: `<main class="workspace"><router-link v-if="admin" :to="'/users/' + id" class="breadcrumb-link"><AppIcon name="back" size="15" />Back to user details</router-link><PageHeader :eyebrow="admin ? 'Activity for user #' + id : 'Your parking activity'" :title="admin ? 'Driver insights' : 'My parking insights'" description="A simple breakdown of parking visits, locations, and expenses."><router-link v-if="!admin" class="btn btn-outline-secondary" :to="'/user-dashboard/' + $store.state.user_id">View bookings <AppIcon name="arrow" size="15" /></router-link></PageHeader><AppState v-if="loading || error" :loading="loading" :error="error" @retry="load" /><template v-else><div class="stats-grid"><StatCard label="Total visits" :value="number(bookings.length)" detail="All parking sessions" icon="calendar" /><StatCard label="Total charges" :value="money(charges)" detail="Completed sessions only" icon="chart" /><StatCard label="Average charge" :value="money(completed.length ? charges / completed.length : 0)" detail="Per completed session" icon="clock" /><StatCard label="Locations visited" :value="number(Object.keys(stats.lot_usage || {}).length)" detail="Distinct parking lots" icon="pin" /></div><div v-if="bookings.length" class="chart-grid"><ChartCard title="Monthly parking expenses" description="Completed-session charges, grouped by arrival month." :entries="monthlyEntries(stats.monthly_cost)" currency /><ChartCard title="Visits over time" description="The number of sessions started each month." :entries="monthlyEntries(monthlyVisits)" type="line" /><ChartCard title="Favorite parking locations" description="Up to 8 most-visited locations, ordered by number of visits." :entries="topEntries(stats.lot_usage)" type="horizontalBar" wide /></div><div v-else class="surface"><AppState icon="chart" title="Insights start with your first visit" description="Once a parking session is recorded, visit patterns and expenses will appear here."><router-link v-if="!admin" class="btn btn-primary" to="/lots">Find a parking space</router-link></AppState></div></template></main>`,
 };

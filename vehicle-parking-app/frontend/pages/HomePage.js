@@ -1,129 +1,145 @@
 export default {
   template: `
-    <div class="bg-white text-dark">
-
-      <!-- Hero Section -->
-      <section class="bg-gradient text-white text-center py-5" style="background: linear-gradient(135deg, #0d6efd, #6610f2);">
+    <main class="parking-home">
+      <section class="parking-home-hero" aria-labelledby="home-heading">
         <div class="container">
-          <h1 class="display-3 fw-bold mb-3">Welcome to ParkingMaster</h1>
-          <p class="lead mb-4">Seamlessly find, book, and manage your parking—faster than ever before.</p>
-          <div>
-            <router-link class="btn btn-light btn-lg rounded-pill me-3 px-4" to="/login" active-class="active">Login</router-link>
-            <router-link class="btn btn-outline-light btn-lg rounded-pill px-4" to="/register" active-class="active">Register</router-link>
-          </div>
-        </div>
-      </section>
+          <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+              <p class="parking-home-eyebrow">Vehicle parking management</p>
+              <h1 id="home-heading">Less searching.<br><span>More parking.</span></h1>
+              <p class="parking-home-intro">
+                Find a parking lot, check available spaces, and book your spot.
+                Keep your bookings and parking expenses together in one place.
+              </p>
+              <div class="parking-home-actions">
+                <template v-if="!$store.state.loggedIn">
+                  <router-link class="btn btn-primary" to="/login">Sign in to find parking <span aria-hidden="true">&rarr;</span></router-link>
+                  <router-link class="btn btn-outline-secondary" to="/register">Create an account</router-link>
+                </template>
+                <template v-else>
+                  <router-link class="btn btn-primary" to="/lots">Browse parking lots <span aria-hidden="true">&rarr;</span></router-link>
+                  <router-link class="btn btn-outline-secondary" :to="dashboardPath">Open my dashboard</router-link>
+                </template>
+              </div>
+              <p class="parking-home-supporting">Hourly pricing. Clear availability. A simpler parking routine.</p>
+            </div>
 
-      <!-- How It Works -->
-      <section class="py-5">
-        <div class="container text-center">
-          <h2 class="fw-semibold mb-4">How It Works</h2>
-          <div class="row g-4">
-            <div class="col-md-4">
-              <div class="p-4 shadow-sm rounded bg-white h-100 border">
-                <div class="mb-3 fs-1 text-primary">🔍</div>
-                <h5 class="fw-bold">Search Lots</h5>
-                <p class="text-muted">Find available parking spaces near your destination with ease.</p>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="p-4 shadow-sm rounded bg-white h-100 border">
-                <div class="mb-3 fs-1 text-primary">🅿️</div>
-                <h5 class="fw-bold">Reserve Your Spot</h5>
-                <p class="text-muted">Book a slot instantly and skip the hassle of finding parking manually.</p>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="p-4 shadow-sm rounded bg-white h-100 border">
-                <div class="mb-3 fs-1 text-primary">📊</div>
-                <h5 class="fw-bold">Track Your Parking</h5>
-                <p class="text-muted">Monitor past bookings and monthly expenses through smart stats.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Features Section -->
-      <section class="py-5 bg-light border-top">
-        <div class="container">
-          <h2 class="text-center fw-semibold mb-5">Features That Make Us Stand Out</h2>
-          <div class="row text-center g-4">
-            <div class="col-md-3">
-              <div class="p-3 bg-white shadow-sm rounded h-100 border">
-                <div class="fs-1 text-success">📍</div>
-                <h6 class="fw-semibold mt-3">Geo-Based Lot Discovery</h6>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="p-3 bg-white shadow-sm rounded h-100 border">
-                <div class="fs-1 text-success">⏰</div>
-                <h6 class="fw-semibold mt-3">Live Slot Tracking</h6>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="p-3 bg-white shadow-sm rounded h-100 border">
-                <div class="fs-1 text-success">📈</div>
-                <h6 class="fw-semibold mt-3">Usage Analytics</h6>
-              </div>
-            </div>
-            <div class="col-md-3">
-              <div class="p-3 bg-white shadow-sm rounded h-100 border">
-                <div class="fs-1 text-success">🧠</div>
-                <h6 class="fw-semibold mt-3">Admin Insights</h6>
+            <div class="col-lg-5 offset-lg-1">
+              <div class="parking-home-preview" aria-labelledby="preview-heading">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                  <div class="d-flex align-items-center">
+                    <span class="parking-home-sign mr-3" aria-hidden="true">P</span>
+                    <div>
+                      <h2 id="preview-heading">A space for every stop</h2>
+                      <span class="parking-home-preview-label">Illustration &middot; not live availability</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="parking-home-spaces" aria-label="Illustration showing available and occupied parking spaces">
+                  <div v-for="space in previewSpaces" :key="space.label"
+                    class="parking-home-space" :class="{'parking-home-space-occupied': space.occupied}">
+                    <span class="parking-home-space-number">{{ space.label }}</span>
+                    <svg v-if="space.occupied" viewBox="0 0 40 72" width="30" height="57" class="parking-home-car" aria-hidden="true" focusable="false">
+                      <rect x="5" y="2" width="30" height="68" rx="10" fill="currentColor" />
+                      <path d="M10 18h20l-2 12H12zM12 48h16l2 9H10z" fill="#e9ecef" />
+                      <path d="M6 30H3v17h3m28-17h3v17h-3" fill="none" stroke="currentColor" stroke-width="3" />
+                    </svg>
+                    <span v-else class="parking-home-space-open">Available</span>
+                  </div>
+                </div>
+                <div class="parking-home-lane" aria-hidden="true"><span>&larr;</span> Easy in. Easy out. <span>&rarr;</span></div>
+                <div class="parking-home-legend">
+                  <span><i class="parking-home-dot parking-home-dot-open" aria-hidden="true"></i>Available</span>
+                  <span><i class="parking-home-dot parking-home-dot-occupied" aria-hidden="true"></i>Occupied</span>
+                  <span class="ml-auto">Your next stop, sorted.</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Admin CTA -->
-      <section class="py-5 text-center">
+      <section class="parking-home-steps" aria-labelledby="steps-heading">
         <div class="container">
-          <h2 class="fw-bold mb-2">Own a Parking Lot?</h2>
-          <p class="mb-4 text-muted">Use our tools to manage, analyze, and grow your parking business effortlessly.</p>
-          <router-link class="btn btn-primary btn-lg rounded-pill px-4" to="/admin-dashboard" active-class="active">Access Admin Panel</router-link>
+          <div class="parking-home-section-heading">
+            <p class="parking-home-eyebrow">From arrival to departure</p>
+            <h2 id="steps-heading">Parking in three simple steps</h2>
+            <p class="text-muted mb-0">Everything you need, without the extra hassle.</p>
+          </div>
+          <div class="row">
+            <div v-for="step in steps" :key="step.number" class="col-md-4 mb-3">
+              <article class="parking-home-step h-100">
+                <span class="parking-home-step-number">{{ step.number }}</span>
+                <h3>{{ step.title }}</h3>
+                <p class="text-muted mb-0">{{ step.description }}</p>
+              </article>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- Testimonials -->
-      <section class="py-5 bg-light">
-        <div class="container text-center">
-          <h2 class="fw-semibold mb-4">What Our Users Say</h2>
-          <div class="row g-4">
-            <div class="col-md-4">
-              <div class="bg-white p-4 rounded shadow-sm h-100">
-                <p class="mb-2 fst-italic">“Smooth experience, especially during busy hours!”</p>
-                <footer class="blockquote-footer">Yogesh Berwal ⭐⭐⭐⭐⭐</footer>
+      <section class="parking-home-management" aria-labelledby="management-heading">
+        <div class="container">
+          <div class="parking-home-management-card">
+            <div class="row align-items-center">
+              <div class="col-lg-5 mb-4 mb-lg-0">
+                <p class="parking-home-eyebrow">One app. Two perspectives.</p>
+                <h2 id="management-heading">Simple for drivers.<br>Organized for admins.</h2>
+                <p class="text-muted mb-0">From a single booking to an overview of every lot, ParkingApp keeps the details easy to follow.</p>
               </div>
-            </div>
-            <div class="col-md-4">
-              <div class="bg-white p-4 rounded shadow-sm h-100">
-                <p class="mb-2 fst-italic">“My go-to app for daily parking near the office.”</p>
-                <footer class="blockquote-footer">Rajat Rabiya ⭐⭐⭐⭐⭐</footer>
+              <div class="col-md-6 col-lg-3 offset-lg-1 mb-4 mb-md-0">
+                <h3>For drivers</h3>
+                <ul class="parking-home-feature-list">
+                  <li>Search lots by name, address or PIN</li>
+                  <li>Book and release a parking slot</li>
+                  <li>Review booking history and costs</li>
+                </ul>
               </div>
-            </div>
-            <div class="col-md-4">
-              <div class="bg-white p-4 rounded shadow-sm h-100">
-                <p class="mb-2 fst-italic">“Love the monthly reports. Very useful insights!”</p>
-                <footer class="blockquote-footer">Himani Punia ⭐⭐⭐⭐⭐</footer>
+              <div class="col-md-6 col-lg-3">
+                <h3>For administrators</h3>
+                <ul class="parking-home-feature-list">
+                  <li>Manage parking lots and capacity</li>
+                  <li>Review occupancy and usage</li>
+                  <li>Export data and explore statistics</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Footer -->
-      <footer class="bg-dark text-white text-center py-4">
-        <div class="container">
-          <p class="mb-2">© 2025 <strong>Vehicle-Parking-App</strong>. All rights reserved.</p>
-          <p class="mb-0 small">
-            <a href="#" class="text-white text-decoration-none me-3">Privacy Policy</a>
-            <a href="#" class="text-white text-decoration-none">Terms of Use</a>
-          </p>
+      <footer class="parking-home-footer">
+        <div class="container d-flex flex-column flex-sm-row align-items-sm-center justify-content-between">
+          <span class="parking-home-wordmark">ParkingApp</span>
+          <span class="text-muted small mt-2 mt-sm-0">Find a space. Make your next stop easier.</span>
         </div>
       </footer>
-
-    </div>
-  `
-}
+    </main>
+  `,
+  data() {
+    return {
+      previewSpaces: [
+        {label: 'A01', occupied: true},
+        {label: 'A02', occupied: false},
+        {label: 'A03', occupied: true},
+        {label: 'A04', occupied: false},
+        {label: 'B01', occupied: false},
+        {label: 'B02', occupied: true},
+        {label: 'B03', occupied: false},
+        {label: 'B04', occupied: true},
+      ],
+      steps: [
+        {number: '01', title: 'Find your lot', description: 'Browse parking locations, compare hourly rates, and check how many spaces are available.'},
+        {number: '02', title: 'Book a space', description: 'Choose an available lot and enter your vehicle number to start your parking session.'},
+        {number: '03', title: 'Head out, hassle-free', description: 'Release your slot when you leave. Review the parking duration and cost in your booking history.'},
+      ],
+    };
+  },
+  computed: {
+    dashboardPath() {
+      return this.$store.state.role === 'admin'
+        ? '/admin-dashboard'
+        : '/user-dashboard/' + this.$store.state.user_id;
+    },
+  },
+};

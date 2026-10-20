@@ -1,77 +1,11 @@
+import {money} from '../utils/api.js';
 export default {
-    name: "LotCard",
-    props: {
-        lot_id: Number,
-        location_name: String,
-        address: String,
-        pincode: Number,
-        price: Number,
-        available_slot: { type: Number, default: 0 },
-        occupied_slot: { type: Number, default: 0 },
-    },
+    props: {lot_id: Number, location_name: String, address: String, pincode: Number, price: Number,
+        available_slot: {type: Number, default: 0}, occupied_slot: {type: Number, default: 0}, management: Boolean},
     computed: {
-        totalSlots() {
-            return this.available_slot + this.occupied_slot;
-        },
-        usagePercent() {
-            if (this.totalSlots === 0) return 0;
-            return Math.round((this.occupied_slot / this.totalSlots) * 100);
-        }
+        total() { return this.available_slot + this.occupied_slot; },
+        occupiedPercent() { return this.total ? Math.round(this.occupied_slot / this.total * 100) : 0; },
     },
-    template: `
-        <div class="card border-0 shadow-sm hover-shadow p-4 mb-4" 
-        style="border-radius: 6px; background-color: #f9fafb; transition: 0.3s ease; min-height: 300px;">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <h4 
-                    class="text-primary fw-semibold mb-0"
-                    @click="$router.push('/lots/' + lot_id)"
-                    style="cursor: pointer;"
-                >
-                    <i class="bi bi-geo-alt-fill me-2"></i>{{ location_name }}
-                </h4>
-                <span class="badge bg-light text-dark px-3 py-2 border rounded-pill fs-6">
-                    ₹{{ price }}/hr
-                </span>
-            </div>
-
-            <p class="text-muted mb-2"><i class="bi bi-pin-map-fill me-2"></i>{{ address }}</p>
-            <p class="text-muted mb-4 small">Pincode: {{ pincode }}</p>
-
-            <div class="mb-3">
-                <div class="small text-muted mb-1">Slot Status</div>
-                <div class="progress" style="height: 10px; border-radius: 6px;">
-                    <div 
-                        class="progress-bar bg-success" 
-                        :style="{ width: (100 - usagePercent) + '%' }"
-                        role="progressbar"
-                        :aria-valuenow="100 - usagePercent"
-                        aria-valuemin="0" 
-                        aria-valuemax="100"
-                    ></div>
-                    <div 
-                        class="progress-bar bg-danger" 
-                        :style="{ width: usagePercent + '%' }" 
-                        role="progressbar"
-                        :aria-valuenow="usagePercent"
-                        aria-valuemin="0" 
-                        aria-valuemax="100"
-                    ></div>
-                </div>
-                <div class="mt-2 small">
-                    <span class="text-success">{{ available_slot }} Available</span> -
-                    <span class="text-danger">{{ occupied_slot }} Occupied</span>
-                </div>
-            </div>
-
-            <div class="d-grid">
-                <button 
-                    class="btn btn-outline-primary btn-sm mt-2"
-                    style="border-radius: 5px;"
-                    @click="$router.push('/lots/' + lot_id)"
-                >
-                    View Details
-                </button>
-            </div>
-        </div>
-    `
-}
+    methods: {money},
+    template: `<article class="lot-card"><div class="lot-card-body"><div class="lot-card-top"><span class="lot-marker"><AppIcon name="pin" size="21" /></span><span class="status-badge" :class="!available_slot ? 'muted' : available_slot <= 3 ? 'warning' : ''">{{ !available_slot ? 'Currently full' : available_slot <= 3 ? 'Limited spaces' : 'Spaces available' }}</span></div><h2><router-link :to="'/lots/' + lot_id">{{ location_name }}</router-link></h2><p class="lot-address">{{ address }}</p><p class="lot-pin">PIN {{ pincode }} <span aria-hidden="true">·</span> Lot #{{ lot_id }}</p><div class="occupancy-meta"><span>{{ available_slot }} available</span><span>{{ total }} total spaces</span></div><div class="occupancy-track" role="img" :aria-label="occupied_slot + ' of ' + total + ' spaces occupied'"><div class="occupancy-fill" :style="{width: occupiedPercent + '%'}"></div></div><div class="lot-rate">{{ money(price) }}<span>/ hour</span></div></div><div class="lot-card-footer"><router-link class="view-link" :to="'/lots/' + lot_id">View lot <AppIcon name="arrow" size="15" /></router-link><router-link v-if="management" class="btn btn-quiet btn-sm" :to="'/lots/' + lot_id + '/update-lot'"><AppIcon name="edit" size="15" />Edit</router-link></div></article>`,
+};

@@ -1,101 +1,28 @@
-import UserCard from "../components/UserCard.js";
-import {downloadExport} from "../utils/exports.js";
+import {api, number} from '../utils/api.js';
+import {notify, confirmAction} from '../utils/feedback.js';
+import {downloadExport} from '../utils/exports.js';
 
 export default {
-    template : `
-    <div class="container mt-4">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h1 class="text-dark">User Management</h1>
-            <button @click="users_create" :disabled="exporting" class="btn btn-outline-secondary btn-sm mt-2" style="border-radius: 5px;">
-            Export Users Data
-            </button>
-        </div>
-
-        <div class="d-flex justify-content-end mb-4">
-            <input 
-                v-model="searchQuery"
-                type="text"
-                placeholder="🔍 Search Users..."
-                class="form-control"
-                style="
-                    max-width: 300px;
-                    border-radius: 2rem;
-                    padding: 0.6rem 1.2rem;
-                    font-size: 0.95rem;
-                    border: 1px solid #ccc;
-                    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-                    transition: all 0.2s ease;
-                "
-                @focus="(e) => e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.2)'"
-                @blur="(e) => e.target.style.boxShadow = '0 1px 6px rgba(0,0,0,0.05)'"
-            />
-        </div>
-
-        <div class="row g-4 mt-3">
-            <div class="col-md-6 col-lg-4" v-for="user in filteredUsers" :key="user.id">
-            <UserCard 
-                :user_id="user.id"
-                :user_name="user.name"
-                :email="user.email"
-                :active="user.active"
-            />
-            </div>
-            <div v-if="filteredUsers.length === 0" class="text-center text-muted mt-4 ">
-                    No user found matching your search.
-                </div>
-        </div>
-    </div>
-    `,
-
-    // this data will contain all the registered users
-    // data is a function that return an object
-    data(){            
-        return {
-            users : [],
-            searchQuery: "",
-            exporting: false
-        }
+    data() { return {users: [], search: '', filter: 'all', page: 1, loading: true, error: '', exporting: false, updating: null}; },
+    computed: {
+        active() { return this.users.filter(user => user.active).length; },
+        filtered() { const query = this.search.trim().toLowerCase(); return this.users.filter(user =>
+            (this.filter === 'all' || Boolean(user.active) === (this.filter === 'active')) && `${user.name} ${user.email} ${user.id}`.toLowerCase().includes(query)); },
+        visible() { return this.filtered.slice((this.page - 1) * 20, this.page * 20); },
     },
-
-    computed : {
-        filteredUsers(){
-            const query = this.searchQuery.trim().toLowerCase();
-            if (!query) return this.users;
-            return this.users.filter(user =>
-                user.name.toLowerCase().includes(query) ||
-                user.email.toLowerCase().includes(query)            );
-        }
-    },
-
-    methods : {
-        async users_create(){
-            this.exporting = true;
-            try {
-                await downloadExport('users', this.$store.state.auth_token);
-            } catch (error) {
-                alert(error.message);
-            } finally {
-                this.exporting = false;
-            }
+    watch: {search() { this.page = 1; }, filter() { this.page = 1; }},
+    mounted() { this.load(); },
+    methods: {
+        number,
+        initials(name) { return name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase(); },
+        async load() { this.loading = true; this.error = ''; try { this.users = await api('/api/users'); } catch (error) { this.error = error.message; } finally { this.loading = false; } },
+        async toggle(user) {
+            if (!await confirmAction({title: (user.active ? 'Block ' : 'Unblock ') + user.name + '?', message: user.active ? 'This user will no longer be able to sign in or make bookings. Their existing booking history will be preserved.' : 'This restores the user’s access to their account and booking features.', confirmLabel: user.active ? 'Block user' : 'Restore access', danger: Boolean(user.active)})) return;
+            this.updating = user.id;
+            try { const updated = await api('/api/users/' + user.id, {method: 'PUT'}); user.active = updated.active; notify(updated.active ? 'User access restored.' : 'User account blocked.'); }
+            catch (error) { notify(error.message, 'error'); } finally { this.updating = null; }
         },
+        async exportUsers() { this.exporting = true; try { await downloadExport('users', this.$store.state.auth_token); notify('Your user export is ready.'); } catch (error) { notify(error.message, 'error'); } finally { this.exporting = false; } },
     },
-
-    // fetch data from /api/users
-    async mounted(){        // run automatically when page is imported
-        const res = await fetch(location.origin + '/api/users', {
-            headers : {
-                'Authentication-Token' : this.$store.state.auth_token
-            }
-        })                                // res is containg the user_fields that we created in resources.py
-
-        const data = await res.json();        // getting response and populate users
-        console.log("Fetched registered users:", data);
-        this.users = data;
-    },
-    
-    components : {
-        UserCard,
-    }
-    
-}
+    template: `<main class="workspace"><PageHeader eyebrow="Admin workspace" title="User management" description="Review registered drivers and manage account access."><button class="btn btn-outline-secondary" :disabled="exporting || loading" @click="exportUsers"><AppIcon name="download" />{{ exporting ? 'Preparing export…' : 'Export users' }}</button></PageHeader><AppState v-if="loading || error" :loading="loading" :error="error" @retry="load" /><template v-else><div class="stats-grid three"><StatCard label="Registered drivers" :value="number(users.length)" detail="Excludes admin accounts" /><StatCard label="Active accounts" :value="number(active)" detail="Can sign in and book" /><StatCard label="Blocked accounts" :value="number(users.length - active)" detail="Access currently restricted" /></div><div class="surface"><div class="surface-heading"><div class="filter-tabs" aria-label="Filter account status"><button @click="filter = 'all'" :aria-pressed="filter === 'all'">All users</button><button @click="filter = 'active'" :aria-pressed="filter === 'active'">Active</button><button @click="filter = 'blocked'" :aria-pressed="filter === 'blocked'">Blocked</button></div><label class="search-field mb-0"><AppIcon name="search" /><input v-model="search" aria-label="Search users" type="search" placeholder="Search name, email or user ID"></label></div><div v-if="visible.length" class="table-wrap"><table class="data-table responsive-table"><caption class="sr-only">Registered drivers and account access</caption><thead><tr><th scope="col">User</th><th scope="col">Email address</th><th scope="col">Status</th><th scope="col">Account access</th></tr></thead><tbody><tr v-for="user in visible" :key="user.id"><td class="identity-cell" data-label="User"><div class="record-name"><span class="user-avatar" aria-hidden="true">{{ initials(user.name) }}</span><div><router-link class="record-primary" :to="'/users/' + user.id">{{ user.name }}</router-link><span class="record-secondary">User #{{ user.id }}</span></div></div></td><td data-label="Email"><span class="break-word">{{ user.email }}</span></td><td data-label="Status"><span class="status-badge" :class="user.active ? '' : 'danger'">{{ user.active ? 'Active' : 'Blocked' }}</span></td><td data-label="Account access"><button class="btn btn-sm" :class="user.active ? 'btn-quiet' : 'btn-outline-secondary'" :disabled="updating === user.id" @click="toggle(user)" :aria-label="(user.active ? 'Block ' : 'Unblock ') + user.name">{{ updating === user.id ? 'Updating…' : user.active ? 'Block user' : 'Unblock user' }}</button></td></tr></tbody></table></div><AppState v-else icon="users" :title="users.length ? 'No matching users' : 'No registered drivers yet'" description="Users will appear here when they create an account."><button v-if="users.length" class="btn btn-outline-secondary" @click="search = ''; filter = 'all'">Clear filters</button></AppState><AppPagination :page="page" :total="filtered.length" :size="20" @change="page = $event" /></div></template></main>`,
+};

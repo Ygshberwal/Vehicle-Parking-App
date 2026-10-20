@@ -1,85 +1,10 @@
+import {money, dateTime} from '../utils/api.js';
 export default {
-    name: "BookingCard",
-    props: {
-        id: Number,
-        s_id: Number,
-        u_id: Number,
-        lot_name: String,
-        parking_timestamp: String,
-        leaving_timestamp: String,
-        cost: Number,
-        vehicle_no: String,
-    },
-    data() {
-        return {
-            localLeavingTimestamp: this.leaving_timestamp,
-            localCost: this.cost,
-        };
-    },
+    props: {booking: Object, admin: Boolean, username: String, busy: Boolean, disabled: Boolean},
     computed: {
-        status() {
-            return this.localLeavingTimestamp ? 'Completed' : 'Active';
-        },
-        computedDuration(){
-            if(!this.localLeavingTimestamp) return null;
-            const start = new Date(this.parking_timestamp)
-            const end = new Date(this.localLeavingTimestamp)
-            return Math.ceil((end-start)/(1000 * 60 * 60))
-        }
+        active() { return !this.booking.leaving_timestamp; },
+        duration() { return this.active ? 'In progress' : Math.max(1, Math.ceil((new Date(this.booking.leaving_timestamp) - new Date(this.booking.parking_timestamp)) / 3600000)) + ' hr billed'; },
     },
-    watch: {
-        leaving_timestamp(newVal) {
-            this.localLeavingTimestamp = newVal;
-        },
-        cost(newVal) {
-            this.localCost = newVal;
-        }
-    },
-    methods: {
-        async releaseSlot() {
-            if (this.status === 'Completed') return;
-
-            try {
-            const response = await fetch(`/api/release-slot/${this.id}`, {
-                method: 'PUT',
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authentication-Token": this.$store.state.auth_token
-                },
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                this.localLeavingTimestamp = data.leaving_timestamp;
-                this.duration = data.parking_timestamp - data.leaving_timestamp
-                this.localCost = data.cost;
-                alert("Slot released successfully!");
-            } else {
-                alert(data.message || "Error releasing slot.");
-            }
-            } catch (err) {
-            alert("Failed to release slot: " + err.message);
-            }
-        }
-    },
-    template: `
-    
-    <div class="row py-3 border-bottom text-center align-items-center">
-        <div class="col-md-2" v-if="$store.state.role === 'user'">{{ vehicle_no }}</div>
-        <div class="col-md-2" v-if="$store.state.role === 'admin'">{{ u_id }}</div>
-        <div class="col-2 text-truncate">{{ lot_name }} </div>
-        <div class="col-md-3"> {{ new Date(parking_timestamp).toLocaleString() }} </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 mb-2">
-            <span :class="status === 'Active' ? 'text-success' : 'text-muted'"> {{ status }} </span>
-        </div>
-        <div class="col-md-1"><strong>₹{{ localCost || 0 }}</strong></div>
-        <div class="col-md-2" v-if="status != 'Active'"  >{{ computedDuration}} hours </div>
-        <div class="col-md-2" v-if="status === 'Active'">
-        <button @click="releaseSlot" class="btn btn-sm btn-outline-success">
-            Release
-        </button>
-        </div>
-    </div>
-    `
+    methods: {money, dateTime},
+    template: `<tr><td class="identity-cell" data-label="Vehicle"><div><span class="vehicle-plate">{{ booking.vehicle_no || 'Not provided' }}</span><span class="record-secondary">Booking #{{ booking.id }}</span></div></td><td v-if="admin" data-label="Driver"><div><span class="record-primary">{{ username || 'User #' + booking.u_id }}</span><span class="record-secondary">User #{{ booking.u_id }}</span></div></td><td data-label="Parking lot"><div><span class="record-primary">{{ booking.lot_name }}</span><span class="record-secondary">Slot #{{ booking.s_id }}</span></div></td><td data-label="Arrival"><div><span class="numeric">{{ dateTime(booking.parking_timestamp) }}</span><span v-if="!active" class="record-secondary">Left {{ dateTime(booking.leaving_timestamp) }}</span></div></td><td data-label="Status"><span class="status-badge" :class="active ? '' : 'muted'">{{ active ? 'Active' : 'Completed' }}</span></td><td data-label="Charge"><div><span v-if="active" class="text-muted">On departure</span><strong v-else class="numeric">{{ money(booking.cost) }}</strong><span class="record-secondary">{{ duration }}</span></div></td><td data-label="Action"><button v-if="active" class="btn btn-outline-secondary btn-sm" :disabled="disabled" @click="$emit('release', booking)" :aria-label="'Release booking ' + booking.id">{{ busy ? 'Releasing…' : 'Release slot' }}</button><span v-else class="record-secondary">Session closed</span></td></tr>`,
 };

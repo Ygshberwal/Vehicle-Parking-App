@@ -238,6 +238,20 @@ Start MailHog before running email jobs. The code expects SMTP on port 1025; the
 
 Check your internet connection and browser console. The frontend loads libraries from external CDNs, so blocked CDN requests can prevent the app from rendering.
 
+## Interface and browser checks
+
+The app uses one shared UI system in `vehicle-parking-app/frontend/app.css`, with reusable navigation, forms, feedback dialogs, pagination and chart components. `frontend/home.css` only adds the landing-page layout. Both stylesheets are served directly by Flask; there is no frontend build step.
+
+To run the optional end-to-end browser checks locally, activate the Python environment and run from the project root:
+
+```bash
+python -m pip install -r tests/requirements-ui.txt
+python -m playwright install chromium
+python tests/ui_smoke.py
+```
+
+These checks create an isolated temporary large dataset. They exercise admin and driver journeys, account registration, booking/release, lot management, exports, keyboard-accessible confirmations, charts, and mobile layouts. They do **not** reset your local database or connect to Neon. Browser-test dependencies are not needed on Render.
+
 ## Demo data / reset for experiments
 
 See [DEMO_DATA.md](DEMO_DATA.md) for saved demo credentials, parking lots, booking scenarios, and reset instructions.

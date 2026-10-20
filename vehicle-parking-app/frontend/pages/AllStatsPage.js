@@ -1,181 +1,22 @@
+import ChartCard from '../components/ChartCard.js';
+import {api, money, number} from '../utils/api.js';
+import {monthlyEntries, topEntries} from '../utils/charts.js';
+
 export default {
-    name: "AdminStatsPage",
-    template: `
-    <div class="container my-5">
-    <div class="text-center mb-4">
-        <hr class="w-25 mx-auto">
-        <h1 class="fw-bold">Parking Overview Dashboard</h1>
-        <hr class="w-25 mx-auto">
-    </div><br>
-
-    <div v-if="Object.keys(stats.revenue_by_month || {}).length" class="mb-5">
-        <canvas id="revenueChart" height="120"></canvas>
-        <h4 class="text-center">Monthly Revenue</h4>
-    </div><br>
-
-    <div v-if="Object.keys(stats.booking_count_by_month || {}).length" class="mb-5">
-        <canvas id="bookingChart" height="120"></canvas>
-        <h4 class="text-center">Bookings Per Month</h4>
-    </div><br>
-
-    <div v-if="Object.keys(stats.revenue_per_lot || {}).length" class="mb-5">
-        <canvas id="lotRevenueChart" height="120"></canvas>
-        <h4 class="text-center">Revenue Per Parking Lot</h4>
-    </div><br>
-
-    <div v-if="Object.keys(stats.lot_usage || {}).length" class="mb-5">
-        <canvas id="lotUsageChart" height="120"></canvas>
-        <h4 class="text-center">Most Used Parking Lots</h4>
-    </div><br>
-
-    <div v-if="Object.keys(stats.user_usage || {}).length" class="mb-5">
-        <canvas id="userChart" height="120"></canvas>
-        <h4 class="text-center">Most Active Users</h4>
-    </div><br>
-
-    <div v-if="Object.keys(stats.lot_occupancy || {}).length" class="mb-5">
-        <canvas id="occupancyChart" height="120"></canvas>
-        <h4 class="text-center">Current Lot Occupancy</h4>
-    </div>
-
-    <div v-if="noData" class="text-center mt-5">
-        <p class="text-muted fs-5">No statistics available yet.</p>
-    </div>
-</div>
-
-    `,
-    data() {
-        return {
-            noData: false,
-            stats: {}
-        };
+    components: {ChartCard},
+    data() { return {stats: {}, loading: true, error: ''}; },
+    computed: {
+        revenue() { return Object.values(this.stats.revenue_by_month || {}).reduce((a, b) => a + b, 0); },
+        bookings() { return Object.values(this.stats.booking_count_by_month || {}).reduce((a, b) => a + b, 0); },
+        capacity() { return Object.values(this.stats.lot_occupancy || {}).reduce((sum, lot) => sum + lot.available + lot.occupied, 0); },
+        occupied() { return Object.values(this.stats.lot_occupancy || {}).reduce((sum, lot) => sum + lot.occupied, 0); },
+        occupancy() { return this.capacity ? Math.round(this.occupied / this.capacity * 100) : 0; },
+        occupancyEntries() { return Object.entries(this.stats.lot_occupancy || {}).sort((a, b) => b[1].occupied - a[1].occupied || a[0].localeCompare(b[0])).slice(0, 8).map(([name, lot]) => [name, lot.occupied, lot.available]); },
     },
-    mounted() {
-        fetch('/api/all-stats', {
-            headers: {
-                'Authentication-Token': this.$store.state.auth_token
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (!data || Object.keys(data).length === 0) {
-                this.noData = true;
-                return;
-            }
-            this.stats = data;
-
-            this.$nextTick(() => {
-            if (document.getElementById('revenueChart')) {
-                this.drawBarChart('revenueChart', data.revenue_by_month, 'Revenue (₹)', '#4CAF50');
-            }
-            if (document.getElementById('bookingChart')) {
-                this.drawLineChart('bookingChart', data.booking_count_by_month, 'Bookings');
-            }
-            if (document.getElementById('lotUsageChart')) {
-                this.drawPieChart('lotUsageChart', data.lot_usage, 'Usage by Lot');
-            }
-            if (document.getElementById('lotRevenueChart')) {
-                this.drawBarChart('lotRevenueChart', data.revenue_per_lot, 'Revenue (₹)', '#2196F3');
-            }
-            if (document.getElementById('userChart')) {
-                this.drawHorizontalBarChart('userChart', data.user_usage, 'Bookings');
-            }
-            if (document.getElementById('occupancyChart')) {
-                this.drawStackedBarChart('occupancyChart', data.lot_occupancy);
-            }
-        });
-
-        })
-        .catch(err => {
-            console.error("Failed to fetch admin stats:", err);
-            this.noData = true;
-        });
-    },
+    mounted() { this.load(); },
     methods: {
-        drawBarChart(id, data, label, color) {
-            new Chart(document.getElementById(id).getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label,
-                        data: Object.values(data),
-                        backgroundColor: color,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { yAxes: [{ ticks: { beginAtZero: true } }] }
-                }
-            });
-        },
-        drawLineChart(id, data, label) {
-            new Chart(document.getElementById(id).getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label,
-                        data: Object.values(data),
-                        borderColor: '#9C27B0',
-                        fill: false,
-                        tension: 0.3
-                    }]
-                },
-                options: { responsive: true }
-            });
-        },
-        drawPieChart(id, data, label) {
-            new Chart(document.getElementById(id).getContext('2d'), {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label,
-                        data: Object.values(data),
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9C27B0']
-                    }]
-                },
-                options: { responsive: true }
-            });
-        },
-        drawHorizontalBarChart(id, data, label) {
-            new Chart(document.getElementById(id).getContext('2d'), {
-                type: 'horizontalBar',
-                data: {
-                    labels: Object.keys(data),
-                    datasets: [{
-                        label,
-                        data: Object.values(data),
-                        backgroundColor: '#FF9800'
-                    }]
-                },
-                options: { responsive: true }
-            });
-        },
-        drawStackedBarChart(id, data) {
-            const labels = Object.keys(data);
-            const occupied = labels.map(lot => data[lot].occupied);
-            const available = labels.map(lot => data[lot].available);
-
-            new Chart(document.getElementById(id).getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [
-                        { label: 'Occupied', data: occupied, backgroundColor: '#f44336' },
-                        { label: 'Available', data: available, backgroundColor: '#4CAF50' }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        xAxes: [{ stacked: true }],
-                        yAxes: [{ stacked: true }]
-                    }
-                }
-            });
-        }
-    }
-}
+        money, number, monthlyEntries, topEntries,
+        async load() { this.loading = true; this.error = ''; try { this.stats = await api('/api/all-stats'); } catch (error) { this.error = error.message; } finally { this.loading = false; } },
+    },
+    template: `<main class="workspace"><PageHeader eyebrow="Admin workspace" title="Parking analytics" description="Understand booking activity, completed-session charges, and location performance."><button class="btn btn-outline-secondary" @click="load" :disabled="loading">Refresh data</button></PageHeader><AppState v-if="loading || error" :loading="loading" :error="error" @retry="load" /><template v-else><div class="stats-grid"><StatCard label="Total charges" :value="money(revenue)" detail="Completed sessions only" icon="chart" /><StatCard label="Total bookings" :value="number(bookings)" detail="All recorded sessions" icon="calendar" /><StatCard label="Current occupancy" :value="occupancy + '%'" :detail="number(occupied) + ' of ' + number(capacity) + ' spaces'" icon="grid" /><StatCard label="Parking locations" :value="number(Object.keys(stats.lot_occupancy || {}).length)" detail="Across the network" icon="pin" /></div><div class="chart-grid"><ChartCard title="Monthly charges" description="Charges recorded against each session’s arrival month." :entries="monthlyEntries(stats.revenue_by_month)" type="line" currency /><ChartCard title="Booking activity" description="The number of parking sessions started each month." :entries="monthlyEntries(stats.booking_count_by_month)" /><ChartCard title="Highest-earning locations" description="Top 8 locations by completed-session charges." :entries="topEntries(stats.revenue_per_lot)" type="horizontalBar" currency /><ChartCard title="Most-used locations" description="Top 8 locations by total number of bookings." :entries="topEntries(stats.lot_usage)" type="horizontalBar" /><ChartCard title="Most active drivers" description="Top 8 names by total parking sessions. Identical names are grouped." :entries="topEntries(stats.user_usage)" type="horizontalBar" /><ChartCard title="Current occupancy by location" description="Top 8 locations by occupied spaces, alongside remaining capacity." :entries="occupancyEntries" type="horizontalBar" stacked /></div></template></main>`,
+};

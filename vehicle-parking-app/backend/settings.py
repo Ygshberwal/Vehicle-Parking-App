@@ -17,6 +17,7 @@ def environment_config():
     return {
         "APP_ENV": environment,
         "DEBUG": not demo,
+        "TEMPLATES_AUTO_RELOAD": not demo,
         "SQLALCHEMY_DATABASE_URI": database_url,
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,
         "SQLALCHEMY_ENGINE_OPTIONS": {"pool_pre_ping": True, "pool_recycle": 300},
