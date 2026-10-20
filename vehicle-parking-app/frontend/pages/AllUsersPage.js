@@ -1,4 +1,5 @@
 import UserCard from "../components/UserCard.js";
+import {downloadExport} from "../utils/exports.js";
 
 export default {
     template : `
@@ -6,7 +7,7 @@ export default {
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="text-dark">User Management</h1>
-            <button @click="users_create" class="btn btn-outline-secondary btn-sm mt-2" style="border-radius: 5px;">
+            <button @click="users_create" :disabled="exporting" class="btn btn-outline-secondary btn-sm mt-2" style="border-radius: 5px;">
             Export Users Data
             </button>
         </div>
@@ -52,7 +53,8 @@ export default {
     data(){            
         return {
             users : [],
-            searchQuery: ""
+            searchQuery: "",
+            exporting: false
         }
     },
 
@@ -68,22 +70,14 @@ export default {
 
     methods : {
         async users_create(){
-            const res = await fetch(location.origin + '/users-create', {
-                headers : {
-                    'Authentication-Token' : this.$store.state.auth_token
-                }
-            })
-            const task_id = (await res.json()).task_id
-
-            const interval = setInterval(async() => {
-                const res = await fetch(`${location.origin}/users-download/${task_id}` )
-                if (res.ok){
-                    console.log('data is ready')
-                    window.open(`${location.origin}/users-download/${task_id}`)
-                    clearInterval(interval)
-                }
-
-            }, 100)
+            this.exporting = true;
+            try {
+                await downloadExport('users', this.$store.state.auth_token);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                this.exporting = false;
+            }
         },
     },
 

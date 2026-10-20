@@ -4,7 +4,7 @@ from flask_security import SQLAlchemyUserDatastore
 from flask_security.utils import hash_password
 
 
-with app.app_context():
+def initialize_local_data():
     db.create_all()
 
     userdatastore : SQLAlchemyUserDatastore = app.security.datastore

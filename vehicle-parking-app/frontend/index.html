@@ -11,6 +11,15 @@
     <title>Vehicle Parking App</title>
 </head>
 <body>
+    {% if demo_mode %}
+    <aside class="alert alert-info rounded-0 mb-0 text-center" role="note">
+        <strong>Portfolio demo</strong> — Shared fictional data; do not enter personal information.
+        Free hosting may take about a minute to wake up.<br>
+        Try user <code>user01@parking.com / user123</code>
+        or admin <code>admin@parking.com / admin123</code>.
+        Emails and background scheduling are disabled in this hosted demo.
+    </aside>
+    {% endif %}
     <div id="app"></div>
     <script  src="{{url_for('static', filename='app.js')}}" type="module"></script>
     <!-- bootstrap -->

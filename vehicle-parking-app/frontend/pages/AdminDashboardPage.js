@@ -1,4 +1,5 @@
 import LotCard from "../components/LotCard.js";
+import {downloadExport} from "../utils/exports.js";
 
 export default {
     template : `
@@ -9,7 +10,7 @@ export default {
     
     <div class="d-flex justify-content-between align-items-center mb-2">
       <h2 class="text-secondary">Parking Lots</h2>
-      <button @click="lot_create" class="btn btn-outline-secondary btn-sm mt-2"
+      <button @click="lot_create" :disabled="exporting" class="btn btn-outline-secondary btn-sm mt-2"
           style="border-radius: 5px;">
         Fetch Lot Data
       </button>
@@ -36,28 +37,21 @@ export default {
     // data is a function that return an object
     data(){             
         return {
-            lots : []
+            lots : [],
+            exporting: false
         }
     },
 
     methods : {
         async lot_create(){
-            const res = await fetch(location.origin + '/lot-create', {
-                headers : {
-                    'Authentication-Token' : this.$store.state.auth_token
-                }
-            })
-            const task_id = (await res.json()).task_id
-
-            const interval = setInterval(async() => {
-                const res = await fetch(`${location.origin}/lot-download/${task_id}` )
-                if (res.ok){
-                    console.log('data is ready')
-                    window.open(`${location.origin}/lot-download/${task_id}`)
-                    clearInterval(interval)
-                }
-
-            }, 100)
+            this.exporting = true;
+            try {
+                await downloadExport('lot', this.$store.state.auth_token);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                this.exporting = false;
+            }
         },
     },
 

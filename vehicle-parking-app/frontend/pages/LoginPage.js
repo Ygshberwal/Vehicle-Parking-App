@@ -26,6 +26,7 @@ export default {
                   v-model="password"
                 >
             </div>
+            <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
             <button class="btn btn-primary w-100 rounded-3 py-2 fw-semibold" @click="submitLogin" style="transition: all 0.3s;">Login</button>
 
             <div class="text-center mt-3">
@@ -42,20 +43,21 @@ export default {
         return {
             email : null,
             password : null,
+            error: '',
         }
     },
     methods : {
         async submitLogin(){
+            this.error = '';
+            try {
             const res = await fetch(location.origin+'/login', 
                 {
                     method : 'POST', 
                     headers: {'Content-Type' : 'application/json'}, 
                     body : JSON.stringify({'email': this.email,'password': this.password})
                 })
-            if (res.ok){
-                console.log("we are logged in")
-                const data = await res.json()
-                console.log(data)
+            const data = await res.json();
+            if (res.ok && data.token){
 
                 localStorage.setItem('user',  JSON.stringify(data))         //adding data to local strorage
                 
@@ -66,7 +68,11 @@ export default {
                 } else {
                     this.$router.push('/lots')
                 }
-
+            } else {
+                this.error = data.message || 'Unable to log in';
+            }
+            } catch (error) {
+                this.error = 'Unable to reach the server. Please try again shortly.';
             }
         }
     }

@@ -2,6 +2,8 @@
 
 A Flask application with a Vue frontend, a SQLite database, Redis caching, and Celery background jobs.
 
+**Free portfolio hosting:** See [DEPLOYMENT.md](DEPLOYMENT.md) for Render + Neon setup. The hosted demo uses PostgreSQL, in-process caching and direct CSV downloads, without Redis, Celery workers or email. The instructions below are for the full local version.
+
 **Use this README for setup.** The older README inside `vehicle-parking-app/` contains outdated instructions.
 
 ## Before you start
@@ -55,16 +57,25 @@ python3.11 -m venv .venv
 source .venv/bin/activate
 
 python -m pip install --upgrade pip
-python -m pip install 'setuptools<81'
-python -m pip install -r <(grep -v '^Flask-Security==' requirements.txt)
+python -m pip install -r requirements.txt
 python -m pip check
 ```
 
-Why these installation commands differ from a plain `pip install -r requirements.txt`:
+Dependencies now use maintained Flask/Security packages. The old `grep` installation workaround and setuptools pin are no longer required.
 
-- `Flask-Security` and `Flask-Security-Too` both provide the `flask_security` module. The command skips the obsolete `Flask-Security` entry and installs `Flask-Security-Too` instead, without editing `requirements.txt`.
-- The pinned Flask-Security-Too version needs `pkg_resources`, so setuptools must remain below version 81.
-- `<(...)` is shell process substitution, supported by zsh and bash. Do not run this command inside a Python interpreter.
+**Returning users upgrading from the earlier requirements:** Stop Flask and Celery first, activate `.venv`, then run:
+
+```bash
+python -m pip uninstall -y Flask-Security passlib Flask-Cache
+python -m pip install --upgrade --force-reinstall -r requirements.txt
+python -m pip check
+```
+
+This removes obsolete packages that share Python module names with their replacements. It does not delete your database. If you previously exported hosted-demo settings in this terminal, clear them before running the local app:
+
+```bash
+unset APP_ENV DATABASE_URL SECRET_KEY SECURITY_PASSWORD_SALT DEMO_PROFILE
+```
 
 Use `.venv` for the commands in this guide. The existing `.parking` environment may have stale paths or missing packages; it is not needed.
 
@@ -180,23 +191,15 @@ Run only one Beat scheduler. Scheduled jobs use the `Asia/Kolkata` timezone; the
 
 ### Login does nothing / `POST /login` returns 400
 
-The login screen currently does not display failed-login messages. A 400 from this route means missing email/password or an unrecognized email. Enter the full email address exactly, without surrounding spaces, and try the credentials above.
-
-An incorrect password currently returns a `wrong password` JSON message with HTTP 200, so status 200 alone does not prove authentication succeeded. In browser developer tools, check **Network → login → Response** for the actual message.
+The login screen displays failed-login messages. HTTP 400 means malformed or missing input; HTTP 401 means invalid credentials or a disabled account. Enter the full email address and try the credentials above. Expired tokens also return 401 and the frontend redirects to login.
 
 ### 404 for `/favicon.ico` or `/json/version`
 
 Neither is a login endpoint. These requests can return 404 without affecting authentication. Check the status and response of **`POST /login`** instead.
 
-### `ModuleNotFoundError: No module named 'pkg_resources'`
+### `pkg_resources` or security-package import errors after updating
 
-From the project root, with `.venv` activated:
-
-```bash
-python -m pip install 'setuptools<81'
-```
-
-Then restart Flask and the Celery worker.
+Your environment probably still contains old dependencies. Stop the app and worker, then follow the returning-user dependency upgrade commands above. The current Flask-Security-Too no longer requires the old setuptools workaround.
 
 ### Other missing Python modules / wrong Flask version
 
@@ -253,7 +256,7 @@ Project/
 └── vehicle-parking-app/
     ├── app.py                    # Flask entry point and Celery initialization
     ├── backend/
-    │   ├── config.py             # SQLite, security, and Redis cache settings
+    │   ├── settings.py           # Tracked local/hosted-demo configuration
     │   ├── models/
     │   │   ├── models.py         # Database models
     │   │   └── create_initial_data.py  # Tables, roles, and default accounts

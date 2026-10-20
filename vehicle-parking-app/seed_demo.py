@@ -80,9 +80,12 @@ def add_large_bookings(db, booking_model, users, lots, slots, now):
         ))
 
 
-def seed_demo(profile="small"):
+def seed_demo(profile="small", application=None, reset=True):
     # Import only after explicit confirmation: importing app initializes its DB.
-    from app import app
+    if application is None:
+        from app import app
+    else:
+        app = application
     from backend.models.models import db, ParkingLot, ParkingSlot, ReserveParkingSlot
     from flask_security.utils import hash_password
 
@@ -90,28 +93,40 @@ def seed_demo(profile="small"):
     user_specs, lot_specs = large_specs() if profile == "large" else (USERS, LOTS)
     with app.app_context():
         expected = root / "instance" / "database.sqlite3"
-        if db.engine.url.get_backend_name() != "sqlite" or (
+        if reset and (db.engine.url.get_backend_name() != "sqlite" or (
             Path(db.engine.url.database).resolve() != expected
-        ):
+        )):
             raise RuntimeError("Refusing to reset anything except the local instance/database.sqlite3")
 
         now = datetime.now().replace(microsecond=0)
         datastore = app.security.datastore
         try:
             # Delete children before parents; commit the reset and seed together.
-            db.session.remove()
-            for table in reversed(db.metadata.sorted_tables):
-                db.session.execute(table.delete())
+            if reset:
+                for table in reversed(db.metadata.sorted_tables):
+                    db.session.execute(table.delete())
+            elif any(db.session.execute(db.select(table).limit(1)).first() for table in db.metadata.sorted_tables):
+                raise RuntimeError("Refusing to seed a database that already contains application data")
+
+            # Fictional seed accounts share documented passwords. Hash each distinct
+            # seed password once so the free host can initialize promptly. Real
+            # registrations still get independently salted hashes via hash_password.
+            hashes = {}
+
+            def seed_password(password):
+                if password not in hashes:
+                    hashes[password] = hash_password(password)
+                return hashes[password]
 
             datastore.create_role(name="admin", description="superuser")
             datastore.create_role(name="user", description="general user")
             datastore.create_user(
                 name="admin", email="admin@parking.com",
-                password=hash_password("admin123"), roles=["admin"],
+                password=seed_password("admin123"), roles=["admin"],
             )
             users = [
                 datastore.create_user(
-                    name=name, email=email, password=hash_password(password),
+                    name=name, email=email, password=seed_password(password),
                     pincode=pincode, roles=["user"],
                 )
                 for name, email, password, pincode in user_specs
@@ -175,6 +190,9 @@ def seed_demo(profile="small"):
               f"{sum(spec[4] for spec in lot_specs)} slots, {expected_completed} completed "
               f"and {expected_active} active bookings.")
         print("Credentials and scenarios: ../DEMO_DATA.md")
+
+    if not reset:
+        return
 
     # Remove only known generated local artifacts, never environments or source.
     artifacts = list((root / "backend" / "celery" / "user-downloads").glob("*.csv"))

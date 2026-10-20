@@ -49,10 +49,18 @@ class ParkingSlot(db.Model):
     status = db.Column(db.String, nullable =  False)
 
 class ReserveParkingSlot(db.Model):
+    __table_args__ = (
+        db.Index("uq_active_vehicle", "vehicle_no", unique=True,
+                 postgresql_where=db.text("leaving_timestamp IS NULL AND vehicle_no IS NOT NULL"),
+                 sqlite_where=db.text("leaving_timestamp IS NULL AND vehicle_no IS NOT NULL")),
+        db.Index("uq_active_slot", "s_id", unique=True,
+                 postgresql_where=db.text("leaving_timestamp IS NULL AND s_id IS NOT NULL"),
+                 sqlite_where=db.text("leaving_timestamp IS NULL AND s_id IS NOT NULL")),
+    )
     id = db.Column(db.Integer, primary_key = True)
     u_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     s_id = db.Column(db.Integer, db.ForeignKey('parking_slot.id'))
-    parking_timestamp = db.Column(db.DateTime, index = True, default = datetime.now())
+    parking_timestamp = db.Column(db.DateTime, index = True, default = datetime.now)
     leaving_timestamp = db.Column(db.DateTime, index = True, nullable = True)
     cost = db.Column(db.Integer, nullable = True)
     vehicle_no = db.Column(db.String, nullable = True)

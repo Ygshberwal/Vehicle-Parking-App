@@ -2,12 +2,13 @@ from collections import defaultdict
 from datetime import datetime
 from math import ceil
 from flask import jsonify, request, current_app as app
-from flask_restful import Api, Resource, fields, marshal_with
-from flask_security import auth_required, current_user
+from flask_restful import Api, Resource, fields, marshal, marshal_with
+from flask_security import auth_required, current_user, roles_required
 from backend.models.models import ParkingLot, ParkingSlot, ReserveParkingSlot, Role, User, db
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import IntegrityError
 
-cache = app.cache
+from backend.extensions import cache
 api = Api(prefix='/api')
 
 lot_fields = {
@@ -39,31 +40,42 @@ booking_fields = {
 }
 
 
+def validated_lot_data():
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        raise ValueError("Missing lot details")
+    name, address = data.get("location_name"), data.get("address")
+    if not isinstance(name, str) or not 1 <= len(name.strip()) <= 100:
+        raise ValueError("Invalid name")
+    if not isinstance(address, str) or not 1 <= len(address.strip()) <= 250:
+        raise ValueError("Invalid address")
+    price, pincode, capacity = int(data.get("price")), int(data.get("pincode")), int(data.get("max_slot"))
+    if not 1 <= price <= 10000 or not 100000 <= pincode <= 999999 or not 1 <= capacity <= 200:
+        raise ValueError("Invalid price, PIN or capacity")
+    return dict(location_name=name.strip(), address=address.strip(), price=price, pincode=pincode, max_slot=capacity)
+
+
 class LotAPI(Resource):
 
     @auth_required('token')
     @cache.memoize(timeout = 5)                  # get fxn takes parameter so memoize
-    @marshal_with(lot_fields)
     def get(self, lot_id):
-        lot = ParkingLot.query.get(lot_id)
+        lot = db.session.get(ParkingLot, lot_id)
 
         if not lot :
             return {"message" : "Not found"}, 404
-        return lot
+        return marshal(lot, lot_fields)
     
     @auth_required("token")
+    @roles_required("admin")
     def put(self, lot_id):
-        lot = ParkingLot.query.get(lot_id)
+        lot = db.session.get(ParkingLot, lot_id)
 
         if not lot :
             return {"message" : "Not found"}, 404
         
-        if current_user.roles[0] != "admin":            
-            return {"message" : "Not authorized"}
-        
         try: 
-            data = request.get_json()
-            app.logger.info(f"PUT /lots received: {data}")
+            data = validated_lot_data()
 
             lot.location_name = data.get('location_name')
             lot.price = int(data.get('price'))
@@ -87,12 +99,17 @@ class LotAPI(Resource):
                 slots_to_remove = current_total_slots - new_max_slot
 
                 if slots_to_remove > lot.available_slot:
+                    db.session.rollback()
                     return {"message": "Cannot delete slots that are already occupied"}, 400
 
                 # Remove only from available slots
                 removable_slots = ParkingSlot.query.filter_by(
                     lot_id=lot.id, status="available"
-                ).limit(slots_to_remove).all()
+                ).filter(~ParkingSlot.id.in_(db.select(ReserveParkingSlot.s_id))).limit(slots_to_remove).all()
+
+                if len(removable_slots) < slots_to_remove:
+                    db.session.rollback()
+                    return {"message": "Cannot remove slots referenced by booking history"}, 400
 
                 for slot in removable_slots:
                     db.session.delete(slot)
@@ -102,30 +119,43 @@ class LotAPI(Resource):
             # else: same number of slots → only update metadata
 
             db.session.commit()
+            cache.delete("lot_list")
+            cache.delete_memoized(LotAPI.get)
             return {"message": "lot updated"}, 201
 
+        except (ValueError, TypeError):
+            db.session.rollback()
+            return {"message": "Provide a name, address, six-digit PIN, positive price and 1–200 slots"}, 400
         except Exception as e:
+            db.session.rollback()
             app.logger.error(f"Error in PUT /lots: {e}")
-            return {"error": str(e)}, 500
+            return {"message": "Unable to update lot"}, 500
 
 
     @auth_required('token')
+    @roles_required("admin")
     def delete(self, lot_id):
-        lot = ParkingLot.query.get(lot_id)
+        lot = db.session.get(ParkingLot, lot_id)
 
         if not lot :
             return {"message" : "Not found"}, 404
         
-        if current_user.roles[0] == "admin":            
+        if current_user.has_role("admin"):
             # occupied_slots = ParkingSlot.query.filter_by(lot_id= lot.id).filter(ParkingSlot.status != "available").all()
             if lot.occupied_slot:
                 return {"message" : "Cannot delete lot, one or more slots are occupied"}, 400
             
+            history = ReserveParkingSlot.query.join(ParkingSlot, ReserveParkingSlot.s_id == ParkingSlot.id).filter(ParkingSlot.lot_id == lot.id).first()
+            if history:
+                return {"message": "Cannot delete a lot referenced by booking history"}, 400
             ParkingSlot.query.filter_by(lot_id = lot.id).delete()
             db.session.delete(lot)
             db.session.commit()
+            cache.delete("lot_list")
+            cache.delete_memoized(LotAPI.get)
+            return {"message": "Lot deleted"}, 200
         else:
-            return {"message" : "you are not admin"}
+            return {"message" : "you are not admin"}, 403
         
 class LotListAPI(Resource):
 
@@ -137,10 +167,12 @@ class LotListAPI(Resource):
         return lots
     
     @auth_required('token')
+    @roles_required("admin")
     def post(self):
         try:
-            data = request.get_json()
-            app.logger.info(f"POST /lots received: {data}")
+            data = validated_lot_data()
+            if app.config["APP_ENV"] == "demo" and ParkingLot.query.count() >= app.config["DEMO_MAX_LOTS"]:
+                return {"message": "The public demo lot limit has been reached"}, 409
 
             location_name = data.get('location_name')
             price = int(data.get('price'))
@@ -168,34 +200,38 @@ class LotListAPI(Resource):
             cache.delete("lot_list")  # clear cache if needed
 
             return {"message": "lot created"}, 201
+        except (ValueError, TypeError):
+            db.session.rollback()
+            return {"message": "Provide a name, address, six-digit PIN, positive price and 1–200 slots"}, 400
         except Exception as e:
+            db.session.rollback()
             app.logger.error(f"Error in POST /lots: {e}")
-            return {"error": str(e)}, 500
+            return {"message": "Unable to create lot"}, 500
 
         # can clear cache after pushing 
 
 class UserAPI(Resource):
 
     @auth_required('token')
-    @cache.memoize(timeout = 5)                  # get fxn takes parameter so memoize
-    @marshal_with(user_fields)
     def get(self, user_id):
-        user = User.query.get(user_id)
+        if not current_user.has_role("admin") and current_user.id != user_id:
+            return {"message": "Access denied"}, 403
+        user = db.session.get(User, user_id)
         
         if not user :
             return {"message" : "Not found"}, 404
-        return user
+        return marshal(user, user_fields)
     
     @auth_required("token")
-    @marshal_with(user_fields)
+    @roles_required("admin")
     def put(self, user_id):
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
 
         if not user:
             return {"message": "User not found"}, 404
 
-        if current_user.roles[0] != "admin":
-            return {"message": "Not authorized"}, 403
+        if user.has_role("admin"):
+            return {"message": "Admin accounts cannot be blocked"}, 400
 
         try:
             app.logger.info(f"PUT /users received for user_id={user_id}")
@@ -206,16 +242,19 @@ class UserAPI(Resource):
                 user.active = 0
 
             db.session.commit()
+            cache.delete("users_list")
 
             app.logger.info(f"User {user.name} blocked successfully")
-            return user, 200  
+            return marshal(user, user_fields), 200
 
         except Exception as e:
+            db.session.rollback()
             app.logger.error(f"Error in PUT /users: {e}")
-            return {"error": str(e)}, 500
+            return {"message": "Unable to update user"}, 500
 
 class UserListAPI(Resource):
     @auth_required('token')
+    @roles_required("admin")
     @cache.cached(timeout = 5, key_prefix = "users_list")                 # get fxn does not take any parameter so cached
     @marshal_with(user_fields)
     def get(self):
@@ -226,15 +265,19 @@ class UserListAPI(Resource):
 class BookSlotAPI(Resource):
     @auth_required('token')
     def post(self, lot_id):
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
+        if not isinstance(data, dict):
+            return {"message": "Provide a vehicle number"}, 400
         vehicle_number = data.get("vehicle_number")
 
-        if not vehicle_number or not vehicle_number.strip():
+        if not isinstance(vehicle_number, str) or not 1 <= len(vehicle_number.strip()) <= 20:
             return {"message": "Vehicle number is required"}, 400
 
         vehicle_number = vehicle_number.strip().upper()
 
-        lot = ParkingLot.query.get(lot_id)
+        if app.config["APP_ENV"] == "demo" and ReserveParkingSlot.query.count() >= app.config["DEMO_MAX_BOOKINGS"]:
+            return {"message": "The public demo booking limit has been reached"}, 409
+        lot = ParkingLot.query.filter_by(id=lot_id).with_for_update().first()
         if not lot:
             return {"message": "Lot not found"}, 404
 
@@ -268,7 +311,13 @@ class BookSlotAPI(Resource):
         )
 
         db.session.add(reservation)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return {"message": "This vehicle or slot was just booked. Refresh and try again."}, 409
+        cache.delete("lot_list")
+        cache.delete_memoized(LotAPI.get)
 
         return {
             "message": "Slot booked",
@@ -279,15 +328,19 @@ class BookSlotAPI(Resource):
 class BookingList(Resource):
     @auth_required('token')
     def get(self, user_id):
-        if current_user.roles[0]=="admin":
+        if current_user.has_role("admin"):
             bookings = ReserveParkingSlot.query.all()
         else:
+            if current_user.id != user_id:
+                return {"message": "Access denied"}, 403
             bookings = ReserveParkingSlot.query.filter_by(u_id=user_id).all()
 
         result = []
+        slots = {slot.id: slot for slot in ParkingSlot.query.all()}
+        lots = {lot.id: lot for lot in ParkingLot.query.all()}
         for booking in bookings:
-            slot = ParkingSlot.query.get(booking.s_id)
-            lot = ParkingLot.query.get(slot.lot_id) if slot else None
+            slot = slots.get(booking.s_id)
+            lot = lots.get(slot.lot_id) if slot else None
 
             parking_ts = booking.parking_timestamp
 
@@ -323,24 +376,26 @@ class BookingList(Resource):
 class ReleaseSlotAPI(Resource):
     @auth_required('token')
     def put(self, booking_id):
-        booking = ReserveParkingSlot.query.get(booking_id)
+        booking = ReserveParkingSlot.query.filter_by(id=booking_id).with_for_update().first()
 
         if not booking or booking.leaving_timestamp:
             return {"message": "Invalid or already released booking."}, 400
 
-        booking.leaving_timestamp = datetime.now()
+        if not current_user.has_role("admin") and booking.u_id != current_user.id:
+            return {"message": "Access denied"}, 403
 
 
         # To get rate: ReserveParkingSlot -> ParkingSlot -> ParkingLot(rate)
-        slot = ParkingSlot.query.get(booking.s_id)
+        slot = db.session.get(ParkingSlot, booking.s_id)
         if not slot:
             return {"message": "Slot not found."}, 404
 
-        lot = ParkingLot.query.get(slot.lot_id)
+        lot = ParkingLot.query.filter_by(id=slot.lot_id).with_for_update().first()
         if not lot:
             return {"message": "Lot not found."}, 404
 
         # Duration in hours
+        booking.leaving_timestamp = datetime.now()
         duration = ceil((booking.leaving_timestamp - booking.parking_timestamp).total_seconds() / 3600)
         booking.cost = int(duration * lot.price)
 
@@ -350,6 +405,8 @@ class ReleaseSlotAPI(Resource):
         lot.occupied_slot -= 1
 
         db.session.commit()
+        cache.delete("lot_list")
+        cache.delete_memoized(LotAPI.get)
 
         return {
             "message": "Slot released successfully.",
@@ -360,20 +417,22 @@ class ReleaseSlotAPI(Resource):
 class UserStatsAPI(Resource):
     @auth_required('token')
     def get(self, user_id):
-        if current_user.roles[0]=="admin":
-            pass
+        if not current_user.has_role("admin") and current_user.id != user_id:
+            return {"message": "Access denied"}, 403
         bookings = ReserveParkingSlot.query.filter_by(u_id=user_id).all()
 
         monthly_cost = defaultdict(int)
         lot_usage = defaultdict(int)
+        slots = {slot.id: slot for slot in ParkingSlot.query.all()}
+        lots = {lot.id: lot for lot in ParkingLot.query.all()}
 
         for booking in bookings:
             if booking.parking_timestamp:
                 month = booking.parking_timestamp.strftime('%Y-%m')
                 monthly_cost[month] += booking.cost or 0
 
-            slot = ParkingSlot.query.get(booking.s_id)
-            lot = ParkingLot.query.get(slot.lot_id) if slot else None
+            slot = slots.get(booking.s_id)
+            lot = lots.get(slot.lot_id) if slot else None
             if lot:
                 lot_usage[lot.location_name] += 1
 
@@ -396,12 +455,15 @@ class UserStatsAPI(Resource):
 class AllStatsAPI(Resource):
     @auth_required('token')
     def get(self):
-        if current_user.roles[0] != 'admin':
+        if not current_user.has_role('admin'):
             return {"error": "Access denied"}, 403
 
         bookings = ReserveParkingSlot.query.all()
         lots = ParkingLot.query.all()
         users = User.query.all()
+        slots_by_id = {slot.id: slot for slot in ParkingSlot.query.all()}
+        lots_by_id = {lot.id: lot for lot in lots}
+        users_by_id = {user.id: user for user in users}
 
         revenue_by_month = defaultdict(int)
         booking_count_by_month = defaultdict(int)
@@ -416,13 +478,13 @@ class AllStatsAPI(Resource):
             revenue_by_month[month] += b.cost or 0
             booking_count_by_month[month] += 1
 
-            slot = ParkingSlot.query.get(b.s_id)
-            lot = ParkingLot.query.get(slot.lot_id) if slot else None
+            slot = slots_by_id.get(b.s_id)
+            lot = lots_by_id.get(slot.lot_id) if slot else None
             if lot:
                 revenue_per_lot[lot.location_name] += b.cost or 0
                 lot_usage[lot.location_name] += 1
 
-            user = User.query.get(b.u_id)
+            user = users_by_id.get(b.u_id)
             if user:
                 user_usage[user.name] += 1
 
@@ -451,4 +513,3 @@ api.add_resource(BookingList, '/user-dashboard/<int:user_id>')
 api.add_resource(ReleaseSlotAPI, '/release-slot/<int:booking_id>')
 api.add_resource(UserStatsAPI, '/user-stats/<int:user_id>')
 api.add_resource(AllStatsAPI, '/all-stats')
-

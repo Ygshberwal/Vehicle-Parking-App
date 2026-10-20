@@ -77,6 +77,7 @@ export default {
           </div>
           -->
 
+          <p v-if="error" class="alert alert-danger" role="alert">{{ error }}</p>
           <button type="submit" class="btn btn-success w-100 py-2 fw-semibold rounded-3" style="transition: all 0.3s;">
             Register
           </button>
@@ -98,10 +99,13 @@ export default {
       name: null,
       pincode: null,
       dp: null,
+      error: '',
     };
   },
   methods: {
     async submitRegister() {
+      this.error = '';
+      try {
       const res = await fetch(location.origin + '/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,6 +121,12 @@ export default {
       if (res.ok) {
         console.log("we are registered");
         this.$router.push('/login');
+      } else {
+        const data = await res.json();
+        this.error = data.message || 'Unable to register';
+      }
+      } catch (error) {
+        this.error = 'Unable to reach the server. Please try again shortly.';
       }
     }
   }

@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from celery import shared_task
 import time
-import flask_excel 
+from pathlib import Path
+from flask import current_app
+from backend.exports import csv_data
 from backend.models.models import ParkingLot, ParkingSlot, ReserveParkingSlot, Role, User
 from backend.celery.mail_service import send_email
 
@@ -10,43 +12,27 @@ def add(x,y):
     time.sleep(10)
     return x+y
 
-@shared_task(bind=True, ignore_result = False)         #have to use bind=True if we are using self
+def write_export(kind, task_id):
+    directory = Path(current_app.config.get("EXPORT_DIRECTORY") or Path(current_app.root_path) / "backend" / "celery" / "user-downloads")
+    directory.mkdir(parents=True, exist_ok=True)
+    filename = f"{kind}_data_{task_id}.csv"
+    (directory / filename).write_bytes(csv_data(kind))
+    return filename
+
+
+@shared_task(bind=True, ignore_result=False)
 def lot_csv(self):
-    resource = ParkingLot.query.all()
+    return write_export("lot", self.request.id)
 
-    task_id = self.request.id
-    file_name = f'lot_data_{task_id}.csv'
-    column_names = [column.name for column in ParkingLot.__table__.columns]
-    lot_out = flask_excel.make_response_from_query_sets(resource, column_names = column_names, file_type='csv')
 
-    with open(f'./backend/celery/user-downloads/{file_name}', 'wb') as file:
-        file.write(lot_out.data)
+@shared_task(bind=True, ignore_result=False)
+def users_csv(self):
+    return write_export("users", self.request.id)
 
-    return file_name
 
-@shared_task(ignore_result=False)
-def users_csv():
-    resource = User.query.all()
-    file_name = 'users_data.csv'
-    column_names = [column.name for column in User.__table__.columns]
-    users_out = flask_excel.make_response_from_query_sets(resource, column_names = column_names, file_type='csv')
-
-    with open(f'./backend/celery/user-downloads/{file_name}', 'wb') as file:
-        file.write(users_out.data)
-
-    return file_name
-
-@shared_task(ignore_result=False)
-def bookings_csv():
-    resource = ReserveParkingSlot.query.all()
-    file_name = 'bookings_data.csv'
-    column_names = [column.name for column in ReserveParkingSlot.__table__.columns]
-    bookings_out = flask_excel.make_response_from_query_sets(resource, column_names = column_names, file_type='csv')
-
-    with open(f'./backend/celery/user-downloads/{file_name}', 'wb') as file:
-        file.write(bookings_out.data)
-
-    return file_name
+@shared_task(bind=True, ignore_result=False)
+def bookings_csv(self):
+    return write_export("bookings", self.request.id)
 
 @shared_task(ignore_result = True)
 def email_reminder(to, subject, content, attachment_path=None, attachment_name=None):                 #just call the send_email function mail_service.py

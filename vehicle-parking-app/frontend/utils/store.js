@@ -15,7 +15,10 @@ const store =  new Vuex.Store({
             try{
                 if(JSON.parse(localStorage.getItem('user'))){
                     const user =JSON.parse(localStorage.getItem('user'));
-                    console.log(user)
+                    if (!user.token || !user.name || !user.id) {
+                        localStorage.removeItem('user');
+                        return;
+                    }
                     state.auth_token = user.token;
                     state.role = user.role;
                     state.name = user.name;
@@ -37,7 +40,7 @@ const store =  new Vuex.Store({
 
             localStorage.removeItem('user')
             console.log("logged out successfully")
-            window.location.reload();
+            window.location.hash = '#/login';
         }
     },
     actions : {

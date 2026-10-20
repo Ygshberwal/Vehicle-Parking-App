@@ -1,4 +1,5 @@
 import BookingCard from '../components/BookingCard.js';
+import {downloadExport} from '../utils/exports.js';
 
 export default {
     props: ['id'],
@@ -11,11 +12,18 @@ export default {
                 <h1 class="fw-bold" v-if="$store.state.role === 'user'">User Dashboard</h1>
                 <hr class="w-25 mx-auto">
                 <h3 class="text-secondary">Your Bookings </h3>  
-                <button v-if="$store.state.role === 'admin'" @click="bookings_create" class="btn btn-sm btn-outline-primary"> Get All Bookings </button> 
+                <button v-if="$store.state.role === 'admin'" @click="bookings_create" :disabled="exporting" class="btn btn-sm btn-outline-primary"> Export Bookings </button>
                 <hr class="w-25 mx-auto">
             </div>
 
         <div v-if="bookings.length">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span>{{ bookings.length }} bookings · Page {{ currentPage }} of {{ totalPages }}</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" :disabled="currentPage <= 1" @click="currentPage--">Previous</button>
+                    <button class="btn btn-sm btn-outline-secondary" :disabled="currentPage >= totalPages" @click="currentPage++">Next</button>
+                </div>
+            </div>
             <div class="row py-3 fw-bold text-center border-bottom bg-white" style="position: sticky; top: 0; z-index: 1000;">
                 <div class="col-md-2" v-if="$store.state.role === 'admin'" @click="sortBy('u_id')">User
                     <span v-if="sortKey === 'u_id'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
@@ -41,7 +49,7 @@ export default {
             </div>
             <div class="list-group">
                 <BookingCard
-                v-for="booking in sortedBookings"
+                v-for="booking in paginatedBookings"
                 :key="booking.id"
                 :id="booking.id"
                 :s_id="booking.s_id"
@@ -64,11 +72,21 @@ export default {
     data() {
         return {
             bookings: [],
+            exporting: false,
+            currentPage: 1,
+            pageSize: 100,
             sortKey : 'parking_timestamp',
             sortOrder : 'desc'
         };
     },
     computed:{
+        totalPages() {
+            return Math.max(1, Math.ceil(this.bookings.length / this.pageSize));
+        },
+        paginatedBookings() {
+            const start = (this.currentPage - 1) * this.pageSize;
+            return this.sortedBookings.slice(start, start + this.pageSize);
+        },
         sortedBookings(){
             return this.bookings.slice().sort((a,b) =>{
                 let valA = a[this.sortKey];
@@ -90,25 +108,18 @@ export default {
     },
     methods : {
         async bookings_create(){
-            const res = await fetch(location.origin + '/bookings-create', {
-                headers : {
-                    'Authentication-Token' : this.$store.state.auth_token
-                }
-            })
-            const task_id = (await res.json()).task_id
-
-            const interval = setInterval(async() => {
-                const res = await fetch(`${location.origin}/bookings-download/${task_id}` )
-                if (res.ok){
-                    console.log('data is ready')
-                    window.open(`${location.origin}/bookings-download/${task_id}`)
-                    clearInterval(interval)
-                }
-
-            }, 100)
+            this.exporting = true;
+            try {
+                await downloadExport('bookings', this.$store.state.auth_token);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                this.exporting = false;
+            }
         },
 
         sortBy(key) {
+            this.currentPage = 1;
             if (this.sortKey === key) {
                 this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
             } else {

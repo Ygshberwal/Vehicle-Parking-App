@@ -36,7 +36,7 @@ Run `python seed_demo.py --reset --profile large` from `vehicle-parking-app/` wi
 - **294 additional users:** `demo007@parking.com` through `demo300@parking.com`, inclusive (three-digit numbers).
 - **Password for every additional user:** `ParkingDemo123!`
 - Example: `demo007@parking.com` / `ParkingDemo123!`.
-- Passwords are hashed separately in the database. Seeding 300 users can take a minute or two.
+- Seed passwords are hashed, never stored as plaintext in the database. Fictional accounts sharing a documented password reuse its seed hash to keep free-host initialization fast; real registrations receive independently salted hashes.
 
 ### Large-profile scenarios
 
@@ -79,6 +79,8 @@ Prices are per hour in rupees. Completed visits use the app's billing rule: roun
 Counts and scenarios describe the initial seed; interacting with the app changes them.
 
 ## Reset to this dataset again
+
+**These reset commands are local SQLite only.** Hosted PostgreSQL initialization is non-destructive and documented in [DEPLOYMENT.md](DEPLOYMENT.md). It never runs a reset or overwrites existing data.
 
 **This permanently replaces all users, roles, lots, slots, and bookings in the local database. Git does not necessarily back up your runtime database.**
 
